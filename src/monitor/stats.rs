@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use sysinfo::{ComponentExt, ProcessExt, SystemExt, System as Sys, ProcessorExt};
 
+/// Stores usage data relative to the node
 pub struct NodeData {
     cores: usize,
     threads: usize,
@@ -11,6 +12,7 @@ pub struct NodeData {
 }
 
 impl NodeData {
+    /// Populates a new NodeData struct with data retrieved with sysinfo
     pub fn new() -> Self {
         let s = Sys::new_all();
 
@@ -28,6 +30,10 @@ impl NodeData {
         return NodeData { cores, threads, cpu_usage, total_ram, used_ram, temperature };
     }
 
+    /// Updates volatile data.
+    /// - CPU usage
+    /// - used RAM
+    /// - temperature (ºC)
     pub fn update(&mut self, sys: &mut Sys) {
         sys.refresh_all();
 
@@ -41,6 +47,9 @@ impl NodeData {
     }
 }
 
+/// Stores data relative to a process
+/// This includes both data regarding the thread itself (pid CPU usage and RAM)
+/// and progress of whatever process is running
 pub struct ProcData {
     pid: i32,
     cpu: f32,
@@ -49,6 +58,7 @@ pub struct ProcData {
 }
 
 impl ProcData {
+    /// Generates a new HashMap with all processes with the given name
     pub fn new(proc_name: &str, sys: &mut Sys) -> HashMap<i32, Self> {
         sys.refresh_all();
 
@@ -64,6 +74,10 @@ impl ProcData {
         );
     }
 
+    /// Updates the volatile data of the process
+    /// - RAM usage
+    /// - CPU usage
+    /// - progress
     pub fn update(&mut self, progress: usize, sys: &mut Sys) {
         sys.refresh_all();
 

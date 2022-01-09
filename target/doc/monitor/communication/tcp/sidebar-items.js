@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["handle_client","Handles a client connection"],["process_input","Validates the input and fetches the PID and progress from it."],["start_server","Starts the TCP server"]]});

@@ -10,7 +10,7 @@ use crate::monitor::stats::{NodeData, ProcData};
 /// Starts the TCP server
 ///
 /// # Acknowledgements
-/// Based on https://riptutorial.com/rust/example/4404/a-simple-tcp-client-and-server-application--echo
+/// Based on <https://riptutorial.com/rust/example/4404/a-simple-tcp-client-and-server-application--echo>
 pub fn start_server(ip: &str, port: usize, proc_name: &str) {
     let mut sys = System::new_all();
 
@@ -58,7 +58,7 @@ pub fn start_server(ip: &str, port: usize, proc_name: &str) {
 /// The messages must be on the format `<pid>:<progress>`.
 ///
 /// # Acknowledgements
-/// Based on https://riptutorial.com/rust/example/4404/a-simple-tcp-client-and-server-application--echo
+/// Based on <https://riptutorial.com/rust/example/4404/a-simple-tcp-client-and-server-application--echo>
 fn handle_client(mut stream: TcpStream, procs: &mut HashMap<i32, ProcData>,
                  node: &mut NodeData, sys: &mut System) {
     let mut data = [0 as u8; 50]; // using 50 byte buffer

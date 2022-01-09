@@ -2,3 +2,4 @@
 /Cargo.lock
 /monitor.iml
 /.idea/
+!/target/doc/*
