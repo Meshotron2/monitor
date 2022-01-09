@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 use std::io::{Read, Write};
 use std::net::{Shutdown, TcpListener, TcpStream};
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::sync::{Arc, Mutex}; //, MutexGuard};
 use std::thread;
 use sysinfo::{System, SystemExt};
-use crate::monitor::stats::ProcData;
-use crate::NodeData; // TODO: make this import the unix one
+use crate::monitor::stats::{NodeData, ProcData};
+// use crate::NodeData; // TODO: make this import the unix one
 
 /// Starts the TCP server
 ///
@@ -113,6 +113,8 @@ fn process_input(input: &[u8]) -> (i32, usize) {
 
         str_progress += &*String::from(*c as char);
     }
+
+    println!("PID: {} @ {}%", str_pid, str_progress);
 
     return (str_pid.parse().unwrap_or(-1), str_progress.parse().unwrap_or(200));
 }

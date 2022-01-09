@@ -1,6 +1,5 @@
 use std::collections::HashMap;
-use std::path::Iter;
-use sysinfo::{ComponentExt, Process, ProcessExt, SystemExt, System as Sys, ProcessorExt, Pid};
+use sysinfo::{ComponentExt, ProcessExt, SystemExt, System as Sys, ProcessorExt};
 
 pub struct NodeData {
     cores: usize,
@@ -13,7 +12,7 @@ pub struct NodeData {
 
 impl NodeData {
     pub fn new() -> Self {
-        let mut s = Sys::new_all();
+        let s = Sys::new_all();
 
         let used_ram = s.used_memory();
         let total_ram = s.total_memory();
@@ -55,7 +54,7 @@ impl ProcData {
 
         return HashMap::from_iter(sys.processes().iter()
             // .map(|(pid, proc)| proc)
-            .filter(|(pid, p)| p.name() == proc_name)
+            .filter(|(_pid, p)| p.name() == proc_name)
             .map(|(pid, p)| (*pid, Self {
                 pid: *pid,
                 cpu: p.cpu_usage(),
