@@ -1,11 +1,12 @@
+/// With help from <https://gist.github.com/ThatsNoMoon/edc16ab072d470d3a7f9d996c8fc9dec>
+
 use std::collections::HashMap;
-use std::io::{Read, Write};
+use std::io::Read;
 use std::net::{Shutdown, TcpListener, TcpStream};
-use std::sync::{Arc, Mutex}; //, MutexGuard};
+use std::sync::{Arc, Mutex};
 use std::thread;
 use sysinfo::{System, SystemExt};
 use crate::monitor::stats::{NodeData, ProcData};
-// use crate::NodeData; // TODO: make this import the unix one
 
 /// Starts the TCP server
 ///
@@ -39,7 +40,7 @@ pub fn start_server(ip: &str, port: usize, proc_name: &str) {
                     let mut nh = node_handle.lock().unwrap();
                     let mut sh = sys_handle.lock().unwrap();
 
-                    handle_client(stream, &mut *ph,&mut *nh, &mut *sh);
+                    handle_client(stream, &mut *ph, &mut *nh, &mut *sh);
                 });
             }
             Err(e) => {
@@ -49,7 +50,7 @@ pub fn start_server(ip: &str, port: usize, proc_name: &str) {
         }
     }
     // close the socket server
-    drop(listener);
+    // drop(listener);
 }
 
 /// Handles a client connection
@@ -61,60 +62,52 @@ pub fn start_server(ip: &str, port: usize, proc_name: &str) {
 /// Based on <https://riptutorial.com/rust/example/4404/a-simple-tcp-client-and-server-application--echo>
 fn handle_client(mut stream: TcpStream, procs: &mut HashMap<i32, ProcData>,
                  node: &mut NodeData, sys: &mut System) {
-    let mut data = [0 as u8; 50]; // using 50 byte buffer
-    while match stream.read(&mut data) {
-        Ok(_size) => {
-            // echo everything!
-            // stream.write(&data[0..size]).unwrap();
+    let mut data = [0; 9]; // using 50 byte buffer
+    loop {
+        match stream.read(&mut data) {
+            Ok(size) => {
+                if size == 0 {
+                    break;
+                }
+                node.update(sys);
 
-            node.update(sys);
+                let (pid, progress) = process_input(&data[0..size]);
 
-            let (pid, progress) = process_input(&data[0.._size]);
+                match procs.get_mut(&pid) {
+                    Some(p) => { p.update(progress, &mut *sys); }
+                    None => {}
+                }
 
-            match procs.get_mut(&pid) {
-                Some(p) => { p.update(progress, &mut *sys); }
-                None => {}
+                // stream.write(&data).unwrap();
+                // true
             }
-
-            stream.write(b"I got your message!\n").unwrap();
-            true
+            Err(_) => {
+                println!("An error occurred, terminating connection with {}", stream.peer_addr().unwrap());
+                stream.shutdown(Shutdown::Both).unwrap();
+                // false
+                break;
+            }
         }
-        Err(_) => {
-            println!("An error occurred, terminating connection with {}", stream.peer_addr().unwrap());
-            stream.shutdown(Shutdown::Both).unwrap();
-            false
-        }
-    } {}
+    }
 }
 
 /// Validates the input and fetches the PID and progress from it.
 ///
 /// input must be of type `<pid>:<progress>`,
 /// where `pid` is a valid process id in `i32` and `progress` is `0 <= progress <= 100` `usize`
+/// These values have to be padded so `pid` takes **5** characters and `progress` takes **3**,
+/// for a total  of **9** bytes
 ///
 /// If `pid` does not match, `-1` is returned
 /// If `progress` does not match, `200` is returned
 ///
 fn process_input(input: &[u8]) -> (i32, usize) {
-    let mut str_pid = String::new();
-    let mut str_progress = String::new();
+    let input = std::str::from_utf8(input).ok().unwrap();
+    // println!("RAW: {}", input);
 
-    let mut is_pid = 1;
-    for c in input {
-        if is_pid == 1 {
-            if *c == ':' as u8 {
-                is_pid = 0;
-                continue;
-            }
-
-            str_pid += &*String::from(*c as char);
-            continue;
-        }
-
-        str_progress += &*String::from(*c as char);
-    }
+    let (str_pid, str_progress) = input.split_once(':').unwrap();
 
     println!("PID: {} @ {}%", str_pid, str_progress);
 
-    return (str_pid.parse().unwrap_or(-1), str_progress.parse().unwrap_or(200));
+    return (str_pid.parse().unwrap_or(0), str_progress.parse().unwrap_or(200));
 }
