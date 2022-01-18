@@ -1,1 +1,0 @@
-window.ALL_CRATES = ["cfg_if","crossbeam_channel","crossbeam_deque","crossbeam_epoch","crossbeam_utils","either","lazy_static","libc","memoffset","monitor","num_cpus","once_cell","rayon","rayon_core","scopeguard","sysinfo"];

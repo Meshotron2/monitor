@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["NodeData","Stores usage data relative to the node"],["ProcData","Stores data relative to a process This includes both data regarding the thread itself (pid CPU usage and RAM) and progress of whatever process is running"]]});
