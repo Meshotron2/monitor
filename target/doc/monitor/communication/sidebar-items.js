@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["tcp",""]]});
+initSidebarItems({"mod":[["http_requests",""],["tcp",""]]});

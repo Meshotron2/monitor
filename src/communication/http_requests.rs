@@ -10,10 +10,10 @@ pub fn send(serializable: &dyn RequestSerializable, url: &String) {
 
     match reqwest::blocking::get(url) {
         Ok(v) => match v.text() {
-            Ok(v1) => println!("Message received: {}", v1);
-            Err(_) => println!("Could not read message");
+            Ok(v1) => { println!("Message received: {}", v1); }
+            Err(_) => { println!("Could not read message"); }
         },
-        Err(_) => println!("An error occurred."),
+        Err(_) => { println!("An error occurred."); },
     };
 }
 
