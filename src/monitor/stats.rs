@@ -1,5 +1,7 @@
 use std::collections::HashMap;
+use std::panic::resume_unwind;
 use sysinfo::{ComponentExt, ProcessExt, SystemExt, System as Sys, ProcessorExt};
+use crate::communication::http_requests::RequestSerializable;
 
 /// Stores usage data relative to the node
 pub struct NodeData {
@@ -95,5 +97,32 @@ impl ProcData {
                 self.progress = 0;
             }
         };
+    }
+}
+
+impl RequestSerializable for NodeData {
+    fn serialize(&self) -> String {
+        return String::new();
+    }
+}
+
+impl RequestSerializable for ProcData {
+    fn serialize(&self) -> String {
+        /*
+        pid: i32,
+    cpu: f32,
+    ram: u64,
+    progress: usize,
+         */
+        let pid = self.pid.to_string();
+        let cpu = self.cpu.to_string();
+        let ram = self.ram.to_string();
+        let progress = self.progress.to_string();
+
+        let mut res = String::with_capacity(24 + pid.len() + cpu.len() + ram.len() + progress.len());
+
+        res = "pid=".to_owned() + &pid + "&cpu=" + &cpu + "&ram=" + &ram + "&progress=" + &progress;
+
+        return res;
     }
 }

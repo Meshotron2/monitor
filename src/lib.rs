@@ -4,6 +4,7 @@ use crate::communication::tcp::start_server;
 
 mod communication {
     pub mod tcp;
+    pub mod http_requests;
 }
 
 mod monitor {
@@ -11,5 +12,6 @@ mod monitor {
 }
 
 pub fn run(ip: &str, port: usize, proc_name: &str) {
-    start_server(ip, port, proc_name);
+    communication::http_requests::test();
+    // start_server(ip, port, proc_name);
 }

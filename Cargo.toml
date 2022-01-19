@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 sysinfo = "0.22.4"
+reqwest = { vresion = "0.11.8", features = ["blocking"] }

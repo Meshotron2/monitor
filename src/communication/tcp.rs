@@ -6,7 +6,9 @@ use std::net::{Shutdown, TcpListener, TcpStream};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use sysinfo::{System, SystemExt};
+use proc_macro::bridge::PanicMessage::String;
 use crate::monitor::stats::{NodeData, ProcData};
+use crate::communication::http_requests::send;
 
 /// Starts the TCP server
 ///
@@ -63,6 +65,8 @@ pub fn start_server(ip: &str, port: usize, proc_name: &str) {
 fn handle_client(mut stream: TcpStream, procs: &mut HashMap<i32, ProcData>,
                  node: &mut NodeData, sys: &mut System) {
     let mut data = [0; 9]; // using 50 byte buffer
+    let url = String::from("127.0.0.1:500");
+
     loop {
         match stream.read(&mut data) {
             Ok(size) => {
@@ -70,11 +74,15 @@ fn handle_client(mut stream: TcpStream, procs: &mut HashMap<i32, ProcData>,
                     break;
                 }
                 node.update(sys);
+                send(node, &url);
 
                 let (pid, progress) = process_input(&data[0..size]);
 
                 match procs.get_mut(&pid) {
-                    Some(p) => { p.update(progress, &mut *sys); }
+                    Some(p) => {
+                        p.update(progress, &mut *sys);
+                        send(p, &url)
+                    }
                     None => {}
                 }
 
