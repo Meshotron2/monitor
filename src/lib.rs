@@ -12,6 +12,6 @@ mod monitor {
 }
 
 pub fn run(ip: &str, port: usize, proc_name: &str) {
-    communication::http_requests::test();
-    // start_server(ip, port, proc_name);
+    // communication::http_requests::test();
+    start_server(ip, port, proc_name);
 }

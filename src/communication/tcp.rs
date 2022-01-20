@@ -64,7 +64,8 @@ pub fn start_server(ip: &str, port: usize, proc_name: &str) {
 fn handle_client(mut stream: TcpStream, procs: &mut HashMap<i32, ProcData>,
                  node: &mut NodeData, sys: &mut System) {
     let mut data = [0; 9]; // using 50 byte buffer
-    let url = String::from("127.0.0.1:500");
+    let node_url = String::from("http://127.0.0.1:8080/monitor/node");
+    let proc_url = String::from("http://127.0.0.1:8080/monitor/proc");
 
     loop {
         match stream.read(&mut data) {
@@ -73,14 +74,14 @@ fn handle_client(mut stream: TcpStream, procs: &mut HashMap<i32, ProcData>,
                     break;
                 }
                 node.update(sys);
-                send(node, &url);
+                send(node, &node_url);
 
                 let (pid, progress) = process_input(&data[0..size]);
 
                 match procs.get_mut(&pid) {
                     Some(p) => {
                         p.update(progress, &mut *sys);
-                        send(p, &url)
+                        send(p, &node_url)
                     }
                     None => {}
                 }

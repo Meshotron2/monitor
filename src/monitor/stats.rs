@@ -102,7 +102,33 @@ impl ProcData {
 
 impl RequestSerializable for NodeData {
     fn serialize(&self) -> String {
-        return String::new();
+        /*
+        cores: usize,
+    threads: usize,
+    cpu_usage: f32,
+    total_ram: u64,
+    used_ram: u64,
+    temperature: Vec<f32>,
+         */
+        let cores = self.cores.to_string();
+        let threads = self.threads.to_string();
+        let cpu_usage = self.cpu_usage.to_string();
+        let total_ram = self.total_ram.to_string();
+        let used_ram = self.used_ram.to_string();
+        let mut temperature = String::new();
+
+        for v in &self.temperature {
+            temperature.push_str(&*v.to_string());
+            temperature.push_str("_");
+        }
+
+        let mut res = String::with_capacity(61 + cores.len() + threads.len()
+            + cpu_usage.len() + total_ram.len() + used_ram.len() + temperature.len());
+
+        res = "?cores=".to_owned() + &cores + "&threads=" + &threads + "&cpu_usage=" + &cpu_usage +
+            "&total_ram=" + &total_ram + "&used_ram=" + &used_ram + "&temperature=" + &temperature;
+
+        return res;
     }
 }
 
@@ -119,9 +145,9 @@ impl RequestSerializable for ProcData {
         let ram = self.ram.to_string();
         let progress = self.progress.to_string();
 
-        let mut res = String::with_capacity(24 + pid.len() + cpu.len() + ram.len() + progress.len());
+        let mut res = String::with_capacity(25 + pid.len() + cpu.len() + ram.len() + progress.len());
 
-        res = "pid=".to_owned() + &pid + "&cpu=" + &cpu + "&ram=" + &ram + "&progress=" + &progress;
+        res = "?pid=".to_owned() + &pid + "&cpu=" + &cpu + "&ram=" + &ram + "&progress=" + &progress;
 
         return res;
     }
