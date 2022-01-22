@@ -1,13 +1,13 @@
 /// With help from <https://gist.github.com/ThatsNoMoon/edc16ab072d470d3a7f9d996c8fc9dec>
 
 use std::collections::HashMap;
-use std::io::Read;
+use std::io::{Read, Write};
 use std::net::{Shutdown, TcpListener, TcpStream};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use sysinfo::{System, SystemExt};
 use crate::monitor::stats::{NodeData, ProcData};
-use crate::communication::http_requests::send;
+use crate::communication::http_requests::{RequestSerializable, send};
 
 /// Starts the TCP server
 ///
@@ -64,8 +64,9 @@ pub fn start_server(ip: &str, port: usize, proc_name: &str) {
 fn handle_client(mut stream: TcpStream, procs: &mut HashMap<i32, ProcData>,
                  node: &mut NodeData, sys: &mut System) {
     let mut data = [0; 9]; // using 50 byte buffer
-    let node_url = String::from("http://127.0.0.1:8080/monitor/node");
-    let proc_url = String::from("http://127.0.0.1:8080/monitor/proc");
+    // let node_url = String::from("http://127.0.0.1:8080/monitor/node");
+    // let proc_url = String::from("http://127.0.0.1:8080/monitor/proc");
+    let node_url = String::from("127.0.0.1:9999");
 
     loop {
         match stream.read(&mut data) {
@@ -74,16 +75,13 @@ fn handle_client(mut stream: TcpStream, procs: &mut HashMap<i32, ProcData>,
                     break;
                 }
                 node.update(sys);
-                send(node, &node_url);
+                send_update(node, &node_url);
 
                 let (pid, progress) = process_input(&data[0..size]);
 
-                match procs.get_mut(&pid) {
-                    Some(p) => {
-                        p.update(progress, &mut *sys);
-                        send(p, &node_url)
-                    }
-                    None => {}
+                if let Some(p) = procs.get_mut(&pid) {
+                    p.update(progress, &mut *sys);
+                    send_update(p, &node_url)
                 }
 
                 // stream.write(&data).unwrap();
@@ -118,4 +116,25 @@ fn process_input(input: &[u8]) -> (i32, usize) {
     println!("PID: {} @ {}%", str_pid, str_progress);
 
     return (str_pid.parse().unwrap_or(0), str_progress.parse().unwrap_or(200));
+}
+
+fn send_update(request: &dyn RequestSerializable, endpoint: &str) {
+    match TcpStream::connect(endpoint) {
+        Ok(mut stream) => {
+            println!("Successfully connected to server in port 49152");
+
+            let mut a = [0; 256];
+            fetch_message(&mut a, &request.serialize());
+
+            stream.write_all(&a).unwrap();
+        }
+        Err(e) => {
+            println!("Failed to connect: {}", e);
+        }
+    }
+    println!("Terminated.");
+}
+
+fn fetch_message(mut a: &mut [u8], data: &String) {
+    write!(a, "{}", data).unwrap();
 }
