@@ -10,11 +10,17 @@ pub fn send(serializable: &dyn RequestSerializable, url: &String) {
     println!("{}\t{}", newrl, query);
 
     let client = reqwest::blocking::Client::new();
-    match client.post(newrl)
+    match client
+        .post(newrl)
         // .body(serializable.serialize())
-        .send() {
-        Ok(v) => { println!("SUCCESS! {}", v.text().unwrap()) }
-        Err(e) => { println!("ERROR! {}", e.to_string()) }
+        .send()
+    {
+        Ok(v) => {
+            println!("SUCCESS! {}", v.text().unwrap())
+        }
+        Err(e) => {
+            println!("ERROR! {}", e.to_string())
+        }
     };
 }
 
@@ -26,13 +32,22 @@ struct Test<'a> {
 pub fn test() {
     let client = reqwest::blocking::Client::new();
 
-    let t = Test { s1: "test", s2: "test too" };
+    let t = Test {
+        s1: "test",
+        s2: "test too",
+    };
 
-    match client.post("http://127.0.0.1/test/")
+    match client
+        .post("http://127.0.0.1/test/")
         // .json(&t)
         // .body(serializable.serialize())
-        .send() {
-        Ok(v) => { println!("SUCCESS! {}", v.text().unwrap()) }
-        Err(e) => { println!("ERROR! {}", e.to_string()) }
+        .send()
+    {
+        Ok(v) => {
+            println!("SUCCESS! {}", v.text().unwrap())
+        }
+        Err(e) => {
+            println!("ERROR! {}", e.to_string())
+        }
     };
 }

@@ -3,8 +3,8 @@
 use crate::communication::tcp::start_server;
 
 mod communication {
-    pub mod tcp;
     pub mod http_requests;
+    pub mod tcp;
 }
 
 mod monitor {

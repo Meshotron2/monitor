@@ -1,6 +1,5 @@
 ///!
 /// With help from <https://gist.github.com/ThatsNoMoon/edc16ab072d470d3a7f9d996c8fc9dec>
-
 use std::io::Write;
 use std::net::TcpStream;
 use std::process;

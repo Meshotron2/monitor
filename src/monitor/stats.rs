@@ -1,7 +1,6 @@
-use std::collections::HashMap;
-use std::panic::resume_unwind;
-use sysinfo::{ComponentExt, ProcessExt, SystemExt, System as Sys, ProcessorExt};
 use crate::communication::http_requests::RequestSerializable;
+use std::collections::HashMap;
+use sysinfo::{ComponentExt, ProcessExt, ProcessorExt, System as Sys, SystemExt};
 
 /// Stores usage data relative to the node
 pub struct NodeData {
@@ -24,12 +23,21 @@ impl NodeData {
         let threads = s.processors().len();
         let cpu_usage = s.global_processor_info().cpu_usage();
 
-        let temperature = s.components().iter()
+        let temperature = s
+            .components()
+            .iter()
             .filter(|comp| comp.label().starts_with("Core "))
             .map(|comp| comp.temperature())
             .collect();
 
-        return NodeData { cores, threads, cpu_usage, total_ram, used_ram, temperature };
+        return NodeData {
+            cores,
+            threads,
+            cpu_usage,
+            total_ram,
+            used_ram,
+            temperature,
+        };
     }
 
     /// Updates volatile data.
@@ -42,7 +50,9 @@ impl NodeData {
         self.cpu_usage = sys.global_processor_info().cpu_usage();
         self.used_ram = sys.used_memory();
 
-        self.temperature = sys.components().iter()
+        self.temperature = sys
+            .components()
+            .iter()
             .filter(|comp| comp.label().starts_with("Core "))
             .map(|comp| comp.temperature())
             .collect();
@@ -61,19 +71,51 @@ pub struct ProcData {
 
 impl ProcData {
     /// Generates a new HashMap with all processes with the given name
-    pub fn new(proc_name: &str, sys: &mut Sys) -> HashMap<i32, Self> {
+    pub fn fetch_all(proc_name: &str, sys: &mut Sys) -> HashMap<i32, Self> {
         sys.refresh_all();
 
-        return HashMap::from_iter(sys.processes().iter()
-            // .map(|(pid, proc)| proc)
-            .filter(|(_pid, p)| p.name() == proc_name)
-            .map(|(pid, p)| (*pid, Self {
-                pid: *pid,
+        return HashMap::from_iter(
+            sys.processes()
+                .iter()
+                // .map(|(pid, proc)| proc)
+                .filter(|(_pid, p)| p.name() == proc_name)
+                .map(|(pid, p)| {
+                    (
+                        *pid,
+                        Self {
+                            pid: *pid,
+                            cpu: p.cpu_usage(),
+                            ram: p.memory(),
+                            progress: 0,
+                        },
+                    )
+                }),
+        );
+    }
+
+    pub fn new(pid: i32, sys: &mut Sys) -> Self {
+        sys.refresh_all();
+        let p1 = sys
+            .processes()
+            .iter()
+            .filter(|(pid1, _pro)| pid == **pid1)
+            .map(|(_pid1, pro)| pro)
+            .last();
+
+        match p1 {
+            Some(p) => Self {
+                pid: pid,
                 cpu: p.cpu_usage(),
                 ram: p.memory(),
                 progress: 0,
-            }))
-        );
+            },
+            None => Self {
+                pid: 0,
+                cpu: 0.0,
+                ram: 0,
+                progress: 0,
+            },
+        }
     }
 
     /// Updates the volatile data of the process
@@ -103,13 +145,13 @@ impl ProcData {
 impl RequestSerializable for NodeData {
     fn serialize(&self) -> String {
         /*
-        cores: usize,
-    threads: usize,
-    cpu_usage: f32,
-    total_ram: u64,
-    used_ram: u64,
-    temperature: Vec<f32>,
-         */
+            cores: usize,
+        threads: usize,
+        cpu_usage: f32,
+        total_ram: u64,
+        used_ram: u64,
+        temperature: Vec<f32>,
+             */
         let cores = self.cores.to_string();
         let threads = self.threads.to_string();
         let cpu_usage = self.cpu_usage.to_string();
@@ -122,11 +164,33 @@ impl RequestSerializable for NodeData {
             temperature.push_str("_");
         }
 
-        let mut res = String::with_capacity(61 + cores.len() + threads.len()
-            + cpu_usage.len() + total_ram.len() + used_ram.len() + temperature.len());
+        temperature.trim();
 
-        res = "?cores=".to_owned() + &cores + "&threads=" + &threads + "&cpu_usage=" + &cpu_usage +
-            "&total_ram=" + &total_ram + "&used_ram=" + &used_ram + "&temperature=" + &temperature;
+        let mut res = String::with_capacity(
+            61 + cores.len()
+                + threads.len()
+                + cpu_usage.len()
+                + total_ram.len()
+                + used_ram.len()
+                + temperature.len(),
+        );
+
+        //res = "?cores=".to_owned() + &cores + "&threads=" + &threads + "&cpu_usage=" + &cpu_usage +
+        //    "&total_ram=" + &total_ram + "&used_ram=" + &used_ram + "&temperature=" + &temperature;
+
+        res = "{\"cores\":".to_owned()
+            + &cores
+            + ",\"threads\":"
+            + &threads
+            + ",\"cpu_usage\":"
+            + &cpu_usage
+            + ",\"total_ram\":"
+            + &total_ram
+            + ",\"used_ram\":"
+            + &used_ram
+            + ",\"temperature\":"
+            + &temperature
+            + "}";
 
         return res;
     }
@@ -135,19 +199,29 @@ impl RequestSerializable for NodeData {
 impl RequestSerializable for ProcData {
     fn serialize(&self) -> String {
         /*
-        pid: i32,
-    cpu: f32,
-    ram: u64,
-    progress: usize,
-         */
+            pid: i32,
+        cpu: f32,
+        ram: u64,
+        progress: usize,
+             */
         let pid = self.pid.to_string();
         let cpu = self.cpu.to_string();
         let ram = self.ram.to_string();
         let progress = self.progress.to_string();
 
-        let mut res = String::with_capacity(25 + pid.len() + cpu.len() + ram.len() + progress.len());
+        let mut res =
+            String::with_capacity(25 + pid.len() + cpu.len() + ram.len() + progress.len());
 
-        res = "?pid=".to_owned() + &pid + "&cpu=" + &cpu + "&ram=" + &ram + "&progress=" + &progress;
+        //res = "?pid=".to_owned() + &pid + "&cpu=" + &cpu + "&ram=" + &ram + "&progress=" + &progress;
+        res = "{\"pid\":".to_owned()
+            + &pid
+            + ",\"cpu\":"
+            + &cpu
+            + ",\"ram\":"
+            + &ram
+            + ",\"progress\":"
+            + &progress
+            + "}";
 
         return res;
     }

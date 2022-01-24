@@ -1,13 +1,12 @@
+use crate::communication::http_requests::RequestSerializable;
+use crate::monitor::stats::{NodeData, ProcData};
 /// With help from <https://gist.github.com/ThatsNoMoon/edc16ab072d470d3a7f9d996c8fc9dec>
-
 use std::collections::HashMap;
 use std::io::{Read, Write};
 use std::net::{Shutdown, TcpListener, TcpStream};
 use std::sync::{Arc, Mutex};
 use std::thread;
-use sysinfo::{System, SystemExt};
-use crate::monitor::stats::{NodeData, ProcData};
-use crate::communication::http_requests::{RequestSerializable, send};
+use sysinfo::{Process, System, SystemExt};
 
 /// Starts the TCP server
 ///
@@ -16,7 +15,7 @@ use crate::communication::http_requests::{RequestSerializable, send};
 pub fn start_server(ip: &str, port: usize, proc_name: &str) {
     let mut sys = System::new_all();
 
-    let procs = Arc::new(Mutex::new(ProcData::new(proc_name, &mut sys)));
+    let procs = Arc::new(Mutex::new(ProcData::fetch_all(proc_name, &mut sys)));
     let sys = Arc::new(Mutex::new(sys));
     let node = Arc::new(Mutex::new(NodeData::new()));
 
@@ -61,12 +60,16 @@ pub fn start_server(ip: &str, port: usize, proc_name: &str) {
 ///
 /// # Acknowledgements
 /// Based on <https://riptutorial.com/rust/example/4404/a-simple-tcp-client-and-server-application--echo>
-fn handle_client(mut stream: TcpStream, procs: &mut HashMap<i32, ProcData>,
-                 node: &mut NodeData, sys: &mut System) {
+fn handle_client(
+    mut stream: TcpStream,
+    procs: &mut HashMap<i32, ProcData>,
+    node: &mut NodeData,
+    sys: &mut System,
+) {
     let mut data = [0; 9]; // using 50 byte buffer
-    // let node_url = String::from("http://127.0.0.1:8080/monitor/node");
-    // let proc_url = String::from("http://127.0.0.1:8080/monitor/proc");
-    let node_url = String::from("127.0.0.1:9999");
+                           // let node_url = String::from("http://127.0.0.1:8080/monitor/node");
+                           // let proc_url = String::from("http://127.0.0.1:8080/monitor/proc");
+    let server_addr = String::from("127.0.0.1:9999");
 
     loop {
         match stream.read(&mut data) {
@@ -75,20 +78,27 @@ fn handle_client(mut stream: TcpStream, procs: &mut HashMap<i32, ProcData>,
                     break;
                 }
                 node.update(sys);
-                send_update(node, &node_url);
+                send_update(node, &server_addr);
 
                 let (pid, progress) = process_input(&data[0..size]);
 
                 if let Some(p) = procs.get_mut(&pid) {
                     p.update(progress, &mut *sys);
-                    send_update(p, &node_url)
+                    send_update(p, &server_addr);
+                } else {
+                    let p = ProcData::new(pid, sys);
+                    send_update(&p, &server_addr);
+                    procs.insert(pid, p);
                 }
 
                 // stream.write(&data).unwrap();
                 // true
             }
             Err(_) => {
-                println!("An error occurred, terminating connection with {}", stream.peer_addr().unwrap());
+                println!(
+                    "An error occurred, terminating connection with {}",
+                    stream.peer_addr().unwrap()
+                );
                 stream.shutdown(Shutdown::Both).unwrap();
                 // false
                 break;
@@ -115,7 +125,10 @@ fn process_input(input: &[u8]) -> (i32, usize) {
 
     println!("PID: {} @ {}%", str_pid, str_progress);
 
-    return (str_pid.parse().unwrap_or(0), str_progress.parse().unwrap_or(200));
+    return (
+        str_pid.parse().unwrap_or(0),
+        str_progress.parse().unwrap_or(200),
+    );
 }
 
 fn send_update(request: &dyn RequestSerializable, endpoint: &str) {
