@@ -1,9 +1,11 @@
 use crate::communication::http_requests::RequestSerializable;
 use std::collections::HashMap;
 use sysinfo::{ComponentExt, ProcessExt, ProcessorExt, System as Sys, SystemExt};
+use rand::Rng;
 
 /// Stores usage data relative to the node
 pub struct NodeData {
+    node_id: u8,
     cores: usize,
     threads: usize,
     cpu_usage: f32,
@@ -17,6 +19,7 @@ impl NodeData {
     pub fn new() -> Self {
         let s = Sys::new_all();
 
+        let node_id = rand::thread_rng().gen();
         let used_ram = s.used_memory();
         let total_ram = s.total_memory();
         let cores = s.physical_core_count().unwrap();
@@ -30,7 +33,10 @@ impl NodeData {
             .map(|comp| comp.temperature())
             .collect();
 
+        print!("Node created {node_id}");
+
         return NodeData {
+            node_id,
             cores,
             threads,
             cpu_usage,
@@ -152,6 +158,7 @@ impl RequestSerializable for NodeData {
         used_ram: u64,
         temperature: Vec<f32>,
              */
+        let node_id = self.node_id.to_string();
         let cores = self.cores.to_string();
         let threads = self.threads.to_string();
         let cpu_usage = self.cpu_usage.to_string();
@@ -164,7 +171,7 @@ impl RequestSerializable for NodeData {
             temperature.push_str("_");
         }
 
-        temperature.trim();
+        // temperature = temperature.trim();
 
         let mut res = String::with_capacity(
             61 + cores.len()
@@ -178,7 +185,9 @@ impl RequestSerializable for NodeData {
         //res = "?cores=".to_owned() + &cores + "&threads=" + &threads + "&cpu_usage=" + &cpu_usage +
         //    "&total_ram=" + &total_ram + "&used_ram=" + &used_ram + "&temperature=" + &temperature;
 
-        res = "{\"cores\":".to_owned()
+        res = "{\"node_id\":".to_owned()
+            + &node_id
+            + ",\"cores\":"
             + &cores
             + ",\"threads\":"
             + &threads
