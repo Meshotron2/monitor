@@ -3,6 +3,7 @@
 int main(void)
 {
     long int n = 99999999;
+    monitorInit();
 
     for (int i = 1; i <= 100; i++)
     {
@@ -25,9 +26,11 @@ int main(void)
 
             if (is_prime) {
                 printf("Sending %d...\n", i);
-                send_to_monitor(i);
+                monitorSend(i);
             }
         }
     }
+
+    monitorDestroy();
 }
    

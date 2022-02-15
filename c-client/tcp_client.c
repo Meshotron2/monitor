@@ -5,47 +5,21 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <stdbool.h>
-#define MAX 9
+
+#define MAX 10
 #define PORT 49152
 #define SA struct sockaddr
 
+static int sockfd, connfd, pid;
+static struct sockaddr_in servaddr, cli;
+static char buff[MAX];
+
+
 // https://www.geeksforgeeks.org/tcp-server-client-implementation-in-c/
-
-void fetch_message(char *buff, int percent)
-{
-    int pid = getpid();
+void monitorInit()
+{  
+    pid = getpid();
     
-    int i = 0;
-    for (; i < 5; i++)
-    {
-        buff[5-i] = '0' + (pid % 10);
-        pid /= 10;
-    }
-
-    buff[5] = ':';
-    i=0;
-
-    for (; i < 3; i++)
-    {
-        buff[MAX-1-i] = '0' + (percent % 10);
-        percent /= 10;
-    }
-
-    printf("Message: ");
-    for (int j = 0; j < MAX; j++)
-        printf("%c", buff[j]);
-
-    printf("\n");
-}
-
-int send_to_monitor(int percent)
-{
-    char buff[MAX];
-    fetch_message(buff, percent);
-
-    int sockfd, connfd;
-    struct sockaddr_in servaddr, cli;
-   
     // socket create and verification
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd == -1) {
@@ -54,7 +28,7 @@ int send_to_monitor(int percent)
     }
     else
         printf("Socket successfully created..\n");
-    bzero(&servaddr, sizeof(servaddr));
+    memset(&servaddr, 0, sizeof(servaddr));
    
     // assign IP, PORT
     servaddr.sin_family = AF_INET;
@@ -68,12 +42,16 @@ int send_to_monitor(int percent)
     }
     else
         printf("connected to the server..\n");
-   
-    // function for chat
-    //func(sockfd);
-    write(sockfd, buff, sizeof(buff));
-    bzero(buff, sizeof(buff));
-   
-    // close the socket
+}
+
+void monitorDestroy()
+{
     close(sockfd);
+}
+
+void monitorSend(int percentage)
+{    
+    memset(buff, 0, sizeof(buff));
+    snprintf(buff, sizeof(buff), "%05d:%03d", pid, percentage);
+    write(sockfd, buff, sizeof(buff)-1);
 }
