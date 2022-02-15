@@ -38,7 +38,7 @@ void fetch_message(char *buff, int percent)
     printf("\n");
 }
 
-int my_send(int percent)
+int send_to_monitor(int percent)
 {
     char buff[MAX];
     fetch_message(buff, percent);
@@ -77,36 +77,3 @@ int my_send(int percent)
     // close the socket
     close(sockfd);
 }
-
-// FOR TESTING PURPOSES ONLY
-int main(void)
-{
-    long int n = 99999999;
-
-    for (int i = 1; i <= 100; i++)
-    {
-        bool is_prime = false;
-
-        while (!is_prime)
-        {
-            n++;
-
-            for (int j = 2; j < n; j++)
-            {
-                if (n % j == 0)
-                {
-                    is_prime = false;
-                    break;
-                }
-
-                is_prime = true;
-            }
-
-            if (is_prime) {
-                printf("Sending %d...\n", i);
-                my_send(i);
-            }
-        }
-    }
-}
-   
