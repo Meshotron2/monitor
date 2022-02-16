@@ -6,7 +6,7 @@ use std::io::{Read, Write};
 use std::net::{Shutdown, TcpListener, TcpStream};
 use std::sync::{Arc, Mutex};
 use std::thread;
-use sysinfo::{Process, System, SystemExt};
+use sysinfo::{System, SystemExt};
 
 /// Starts the TCP server
 ///
@@ -14,10 +14,11 @@ use sysinfo::{Process, System, SystemExt};
 /// Based on <https://riptutorial.com/rust/example/4404/a-simple-tcp-client-and-server-application--echo>
 pub fn start_server(ip: &str, port: usize, proc_name: &str) {
     let mut sys = System::new_all();
+    let node = NodeData::new();
 
-    let procs = Arc::new(Mutex::new(ProcData::fetch_all(proc_name, &mut sys)));
+    let procs = Arc::new(Mutex::new(ProcData::fetch_all(proc_name, node.get_id(), &mut sys)));
     let sys = Arc::new(Mutex::new(sys));
-    let node = Arc::new(Mutex::new(NodeData::new()));
+    let node = Arc::new(Mutex::new(node));
 
     let listener = TcpListener::bind(ip.to_owned() + ":" + &*port.to_string()).unwrap();
     // accept connections and process them, spawning a new thread for each one
@@ -86,7 +87,7 @@ fn handle_client(
                     p.update(progress, &mut *sys);
                     send_update(p, &server_addr);
                 } else {
-                    let p = ProcData::new(pid, sys);
+                    let p = ProcData::new(pid, node.get_id(), sys);
                     send_update(&p, &server_addr);
                     procs.insert(pid, p);
                 }
