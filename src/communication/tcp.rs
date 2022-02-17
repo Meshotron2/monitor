@@ -82,7 +82,8 @@ fn handle_client(
                 //send_update(node, &server_addr);
 
                 println!("Size: {size}");
-                let (pid, progress) = process_input(&data[0..=size]);
+                let (pid, progress) = process_input(&data[0..size]);
+                println!("Post processing: {pid} @ {progress}");
 
                 if let Some(p) = procs.get_mut(&pid) {
                     p.update(progress, &mut *sys);
@@ -129,7 +130,7 @@ fn process_input(input: &[u8]) -> (i32, f32) {
 
     return (
         str_pid.parse().unwrap_or(0),
-        str_progress.parse::<f32>().unwrap_or(200.0),
+        str_progress.trim().parse::<f32>().unwrap_or(200.0),
     );
 }
 
