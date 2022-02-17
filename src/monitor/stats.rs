@@ -77,7 +77,7 @@ pub struct ProcData {
     pid: i32,
     cpu: f32,
     ram: u64,
-    progress: usize,
+    progress: f32,
 }
 
 impl ProcData {
@@ -98,7 +98,7 @@ impl ProcData {
                             pid: *pid,
                             cpu: p.cpu_usage(),
                             ram: p.memory(),
-                            progress: 0,
+                            progress: 0.0,
                         },
                     )
                 }),
@@ -120,14 +120,14 @@ impl ProcData {
                 pid: pid,
                 cpu: p.cpu_usage(),
                 ram: p.memory(),
-                progress: 0,
+                progress: 0.0,
             },
             None => Self {
                 node_id: 0,
                 pid: 0,
                 cpu: 0.0,
                 ram: 0,
-                progress: 0,
+                progress: 0.0,
             },
         }
     }
@@ -136,7 +136,7 @@ impl ProcData {
     /// - RAM usage
     /// - CPU usage
     /// - progress
-    pub fn update(&mut self, progress: usize, sys: &mut Sys) {
+    pub fn update(&mut self, progress: f32, sys: &mut Sys) {
         sys.refresh_all();
 
         let proc_opt = sys.process(self.pid);
@@ -150,7 +150,7 @@ impl ProcData {
             None => {
                 self.ram = 0;
                 self.cpu = 0.0;
-                self.progress = 0;
+                self.progress = 0.0;
             }
         };
     }

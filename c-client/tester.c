@@ -1,11 +1,13 @@
 #include "tcp_client.c"
 
+#define ITER 56
+
 int main(void)
 {
     long int n = 99999999;
     monitorInit();
 
-    for (int i = 1; i <= 100; i++)
+    for (float i = 1; i <= ITER; i++)
     {
         bool is_prime = false;
 
@@ -25,8 +27,8 @@ int main(void)
             }
 
             if (is_prime) {
-                printf("Sending %d...\n", i);
-                monitorSend(i);
+                printf("Sending %7.3f...\n", 100*i/ITER);
+                monitorSend(100*i/ITER);
             }
         }
     }

@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <stdbool.h>
 
-#define MAX 10
+#define MAX 13
 #define PORT 49152
 #define SA struct sockaddr
 
@@ -49,9 +49,9 @@ void monitorDestroy()
     close(sockfd);
 }
 
-void monitorSend(int percentage)
+void monitorSend(float percentage)
 {    
-    memset(buff, 0, sizeof(buff));
-    snprintf(buff, sizeof(buff), "%05d:%03d", pid, percentage);
-    write(sockfd, buff, sizeof(buff)-1);
+    //memset(buff, 0, MAX);
+    snprintf(buff, MAX+1, "%05d:%7.3f", pid, percentage);
+    write(sockfd, buff, MAX);
 }

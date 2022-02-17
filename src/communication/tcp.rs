@@ -67,7 +67,7 @@ fn handle_client(
     node: &mut NodeData,
     sys: &mut System,
 ) {
-    let mut data = [0; 9]; // using 50 byte buffer
+    let mut data = [0; 5 + 1 + 7 + 1]; // using 50 byte buffer
                            // let node_url = String::from("http://127.0.0.1:8080/monitor/node");
                            // let proc_url = String::from("http://127.0.0.1:8080/monitor/proc");
     let server_addr = String::from("127.0.0.1:9999");
@@ -79,9 +79,10 @@ fn handle_client(
                     break;
                 }
                 node.update(sys);
-                send_update(node, &server_addr);
+                //send_update(node, &server_addr);
 
-                let (pid, progress) = process_input(&data[0..size]);
+                println!("Size: {size}");
+                let (pid, progress) = process_input(&data[0..=size]);
 
                 if let Some(p) = procs.get_mut(&pid) {
                     p.update(progress, &mut *sys);
@@ -118,17 +119,17 @@ fn handle_client(
 /// If `pid` does not match, `-1` is returned
 /// If `progress` does not match, `200` is returned
 ///
-fn process_input(input: &[u8]) -> (i32, usize) {
+fn process_input(input: &[u8]) -> (i32, f32) {
     let input = std::str::from_utf8(input).ok().unwrap();
-    // println!("RAW: {}", input);
+    println!("RAW: {}", input);
 
     let (str_pid, str_progress) = input.split_once(':').unwrap();
 
-    println!("PID: {} @ {}%", str_pid, str_progress);
+    println!("PID: {} @ {}%", str_pid, str_progress.trim());
 
     return (
         str_pid.parse().unwrap_or(0),
-        str_progress.parse().unwrap_or(200),
+        str_progress.parse::<f32>().unwrap_or(200.0),
     );
 }
 
