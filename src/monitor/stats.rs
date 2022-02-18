@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use sysinfo::{ComponentExt, ProcessExt, ProcessorExt, System as Sys, SystemExt};
 
 /// Stores usage data relative to the node
+#[derive(Debug)]
 pub struct NodeData {
     node_id: u8,
     cores: usize,
@@ -174,6 +175,8 @@ impl RequestSerializable for NodeData {
         let used_ram = self.used_ram.to_string();
         let mut temperature = String::from("[");
 
+        println!("SENDING: {node_id}, {cpu_usage}, {total_ram}, {used_ram}");
+
         // for v in &self.temperature {
         //     temperature.push_str(&*v.to_string());
         //     temperature.push_str(", ");
@@ -202,17 +205,17 @@ impl RequestSerializable for NodeData {
         //res = "?cores=".to_owned() + &cores + "&threads=" + &threads + "&cpu_usage=" + &cpu_usage +
         //    "&total_ram=" + &total_ram + "&used_ram=" + &used_ram + "&temperature=" + &temperature;
 
-        let res = "{\"node_id\":".to_owned()
+        let res = "{\"nodeId\":".to_owned()
             + &node_id
             + ",\"cores\":"
             + &cores
             + ",\"threads\":"
             + &threads
-            + ",\"cpu_usage\":"
+            + ",\"cpu\":"
             + &cpu_usage
-            + ",\"total_ram\":"
+            + ",\"totalRam\":"
             + &total_ram
-            + ",\"used_ram\":"
+            + ",\"usedRam\":"
             + &used_ram
             + ",\"temperature\":"
             + &temperature
@@ -242,7 +245,7 @@ impl RequestSerializable for ProcData {
         //res = "?pid=".to_owned() + &pid + "&cpu=" + &cpu + "&ram=" + &ram + "&progress=" + &progress;
         res = "{\"pid\":".to_owned()
             + &pid
-            + ",\"node_id\":"
+            + ",\"nodeId\":"
             + &node_id
             + ",\"cpu\":"
             + &cpu

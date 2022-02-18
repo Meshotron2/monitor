@@ -16,7 +16,11 @@ pub fn start_server(ip: &str, port: usize, proc_name: &str) {
     let mut sys = System::new_all();
     let node = NodeData::new();
 
-    let procs = Arc::new(Mutex::new(ProcData::fetch_all(proc_name, node.get_id(), &mut sys)));
+    let procs = Arc::new(Mutex::new(ProcData::fetch_all(
+        proc_name,
+        node.get_id(),
+        &mut sys,
+    )));
     let sys = Arc::new(Mutex::new(sys));
     let node = Arc::new(Mutex::new(node));
 
@@ -68,8 +72,8 @@ fn handle_client(
     sys: &mut System,
 ) {
     let mut data = [0; 5 + 1 + 7 + 1]; // using 50 byte buffer
-                           // let node_url = String::from("http://127.0.0.1:8080/monitor/node");
-                           // let proc_url = String::from("http://127.0.0.1:8080/monitor/proc");
+                                       // let node_url = String::from("http://127.0.0.1:8080/monitor/node");
+                                       // let proc_url = String::from("http://127.0.0.1:8080/monitor/proc");
     let server_addr = String::from("127.0.0.1:9999");
 
     loop {
@@ -79,12 +83,15 @@ fn handle_client(
                     break;
                 }
                 node.update(sys);
-                //send_update(node, &server_addr);
+                send_update(node, &server_addr);
+                println!("{:?}", node);
 
                 println!("Size: {size}");
                 let (pid, progress) = process_input(&data[0..size]);
                 println!("Post processing: {pid} @ {progress}");
 
+                // node.update(sys);
+                // send_update(node, &server_addr);
                 if let Some(p) = procs.get_mut(&pid) {
                     p.update(progress, &mut *sys);
                     send_update(p, &server_addr);
