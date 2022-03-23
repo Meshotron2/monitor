@@ -1,6 +1,6 @@
 use crate::communication::http_requests::RequestSerializable;
 use crate::monitor::stats::{NodeData, ProcData};
-use byteorder::{ByteOrder, LittleEndian};
+// use byteorder::{ByteOrder, LittleEndian};
 /// With help from <https://gist.github.com/ThatsNoMoon/edc16ab072d470d3a7f9d996c8fc9dec>
 use std::collections::HashMap;
 use std::io::{Read, Write};
@@ -74,7 +74,7 @@ fn handle_client(
     sys: &mut System,
 ) {
     // let mut data = [0; 5 + 1 + 7 + 1]; // using 50 byte buffer
-    let mut data = [0; 6*4]; // PID: i32, percentage: f32, send_t, recv_t, delay_t, scatter_t
+    let mut data = [0; 6 * 4]; // PID: i32, percentage: f32, send_t, recv_t, delay_t, scatter_t
                                // let node_url = String::from("http://127.0.0.1:8080/monitor/node");
                                // let proc_url = String::from("http://127.0.0.1:8080/monitor/proc");
     let server_addr = String::from("127.0.0.1:9999");
@@ -128,6 +128,18 @@ fn handle_client(
     }
 }
 
+fn read_i32(buff: &[u8]) -> i32 {
+    i32::from_le_bytes(buff[..4].try_into().unwrap())
+}
+
+fn read_u32(buff: &[u8]) -> u32 {
+    u32::from_le_bytes(buff[..4].try_into().unwrap())
+}
+
+fn read_f32(buff: &[u8]) -> f32 {
+    f32::from_bits(read_u32(buff))
+}
+
 /// Validates the input and fetches the PID and progress from it.
 ///
 /// input must be of type `<pid>:<progress>`,
@@ -140,12 +152,12 @@ fn handle_client(
 ///
 fn process_input(input: &[u8]) -> (i32, f32, f32, f32, f32, f32) {
     return (
-        LittleEndian::read_i32(&input[0..4]),
-        LittleEndian::read_f32(&input[4..8]),
-        LittleEndian::read_f32(&input[8..12]),
-        LittleEndian::read_f32(&input[12..16]),
-        LittleEndian::read_f32(&input[16..20]),
-        LittleEndian::read_f32(&input[20..24]),
+        read_i32(&input[0..4]),
+        read_f32(&input[4..8]),
+        read_f32(&input[8..12]),
+        read_f32(&input[12..16]),
+        read_f32(&input[16..20]),
+        read_f32(&input[20..24]),
     );
 
     // let input = std::str::from_utf8(input).ok().unwrap();
