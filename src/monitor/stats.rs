@@ -34,7 +34,7 @@ impl NodeData {
             .map(|comp| comp.temperature())
             .collect();
 
-        println!("Node created {node_id}");
+        //println!("Node created {node_id}");
 
         return NodeData {
             node_id,

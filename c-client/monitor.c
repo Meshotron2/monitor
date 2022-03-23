@@ -2,7 +2,7 @@
 
 // based on https://www.geeksforgeeks.org/tcp-server-client-implementation-in-c/
 
-// int main()
+// int main(void)
 // {
 //     MonitorData data = { 123456, 50.0f, 0.0f, 1.0f, 2.0f, 3.0f };
 

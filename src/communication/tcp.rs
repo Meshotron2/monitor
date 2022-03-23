@@ -1,5 +1,6 @@
 use crate::communication::http_requests::RequestSerializable;
 use crate::monitor::stats::{NodeData, ProcData};
+use byteorder::{ByteOrder, LittleEndian};
 /// With help from <https://gist.github.com/ThatsNoMoon/edc16ab072d470d3a7f9d996c8fc9dec>
 use std::collections::HashMap;
 use std::io::{Read, Write};
@@ -25,6 +26,7 @@ pub fn start_server(ip: &str, port: usize, proc_name: &str) {
     let node = Arc::new(Mutex::new(node));
 
     let listener = TcpListener::bind(ip.to_owned() + ":" + &*port.to_string()).unwrap();
+    //listener.set_nonblocking(true).expect("Cannot be blocking");
     // accept connections and process them, spawning a new thread for each one
     println!("Server listening on port {}", port);
 
@@ -71,9 +73,10 @@ fn handle_client(
     node: &mut NodeData,
     sys: &mut System,
 ) {
-    let mut data = [0; 5 + 1 + 7 + 1]; // using 50 byte buffer
-                                       // let node_url = String::from("http://127.0.0.1:8080/monitor/node");
-                                       // let proc_url = String::from("http://127.0.0.1:8080/monitor/proc");
+    // let mut data = [0; 5 + 1 + 7 + 1]; // using 50 byte buffer
+    let mut data = [0; 6*4]; // PID: i32, percentage: f32, send_t, recv_t, delay_t, scatter_t
+                               // let node_url = String::from("http://127.0.0.1:8080/monitor/node");
+                               // let proc_url = String::from("http://127.0.0.1:8080/monitor/proc");
     let server_addr = String::from("127.0.0.1:9999");
 
     loop {
@@ -87,16 +90,24 @@ fn handle_client(
                 println!("{:?}", node);
 
                 println!("Size: {size}");
-                let (pid, progress) = process_input(&data[0..size]);
-                println!("Post processing: {pid} @ {progress}");
+                let (pid, progress, send_t, recv_t, delay_t, scatter_t) =
+                    process_input(&data[0..size]);
+                println!("Something");
+                println!("Post processing: {pid} @ {progress}% (send {send_t}, recv {recv_t}, delay {delay_t}, scatter {scatter_t})");
 
                 // node.update(sys);
                 // send_update(node, &server_addr);
                 if let Some(p) = procs.get_mut(&pid) {
                     p.update(progress, &mut *sys);
+
+                    println!("SEND: {}", &p.serialize());
+
                     send_update(p, &server_addr);
                 } else {
                     let p = ProcData::new(pid, node.get_id(), sys);
+
+                    println!("SEND: {}", &p.serialize());
+
                     send_update(&p, &server_addr);
                     procs.insert(pid, p);
                 }
@@ -127,18 +138,27 @@ fn handle_client(
 /// If `pid` does not match, `-1` is returned
 /// If `progress` does not match, `200` is returned
 ///
-fn process_input(input: &[u8]) -> (i32, f32) {
-    let input = std::str::from_utf8(input).ok().unwrap();
-    println!("RAW: {}", input);
-
-    let (str_pid, str_progress) = input.split_once(':').unwrap();
-
-    println!("PID: {} @ {}%", str_pid, str_progress.trim());
-
+fn process_input(input: &[u8]) -> (i32, f32, f32, f32, f32, f32) {
     return (
-        str_pid.parse().unwrap_or(0),
-        str_progress.trim().parse::<f32>().unwrap_or(200.0),
+        LittleEndian::read_i32(&input[0..4]),
+        LittleEndian::read_f32(&input[4..8]),
+        LittleEndian::read_f32(&input[8..12]),
+        LittleEndian::read_f32(&input[12..16]),
+        LittleEndian::read_f32(&input[16..20]),
+        LittleEndian::read_f32(&input[20..24]),
     );
+
+    // let input = std::str::from_utf8(input).ok().unwrap();
+    // println!("RAW: {}", input);
+
+    // let (str_pid, str_progress) = input.split_once(':').unwrap();
+
+    // println!("PID: {} @ {}%", str_pid, str_progress.trim());
+
+    // return (
+    //     str_pid.parse().unwrap_or(0),
+    //     str_progress.trim().parse::<f32>().unwrap_or(200.0),
+    // );
 }
 
 fn send_update(request: &dyn RequestSerializable, endpoint: &str) {

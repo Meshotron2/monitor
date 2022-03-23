@@ -5,7 +5,7 @@
 int main(void)
 {
     long int n = 99999999;
-    monitorInit();
+    // monitorInit();
 
     for (float i = 1; i <= ITER; i++)
     {
@@ -28,11 +28,15 @@ int main(void)
 
             if (is_prime) {
                 printf("Sending %7.3f...\n", 100*i/ITER);
+                monitorInit();
                 monitorSend(100*i/ITER);
+                monitorDestroy();
             }
         }
     }
 
-    monitorDestroy();
+    printf("Ending...");
+    // monitorDestroy();
+    printf("Ended.");
 }
    
