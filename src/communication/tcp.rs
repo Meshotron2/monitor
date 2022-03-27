@@ -1,6 +1,5 @@
 use crate::communication::http_requests::RequestSerializable;
 use crate::monitor::stats::{NodeData, ProcData};
-// use byteorder::{ByteOrder, LittleEndian};
 /// With help from <https://gist.github.com/ThatsNoMoon/edc16ab072d470d3a7f9d996c8fc9dec>
 use std::collections::HashMap;
 use std::io::{Read, Write};
