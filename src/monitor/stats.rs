@@ -90,28 +90,55 @@ impl ProcData {
     pub fn fetch_all(proc_name: &str, node_id: u8, sys: &mut Sys) -> HashMap<i32, Self> {
         sys.refresh_all();
 
-        return HashMap::from_iter(
-            sys.processes()
-                .iter()
-                // .map(|(pid, proc)| proc)
-                .filter(|(_pid, p)| p.name() == proc_name)
-                .map(|(pid, p)| {
-                    (
-                        *pid,
-                        Self {
-                            node_id,
-                            pid: *pid,
-                            cpu: p.cpu_usage(),
-                            ram: p.memory(),
-                            send_t: 0.0,
-                            recv_t: 0.0,
-                            delay_t: 0.0,
-                            scatter_t: 0.0,
-                            progress: 0.0,
-                        },
-                    )
-                }),
-        );
+        // return HashMap::from_iter(
+        //     sys.processes()
+        //         .iter()
+        //         // .map(|(pid, proc)| proc)
+        //         .filter(|(_pid, p)| p.name() == proc_name)
+        //         .map(|(pid, p)| {
+        //             (
+        //                 *pid,
+        //                 Self {
+        //                     node_id,
+        //                     pid: *pid,
+        //                     cpu: p.cpu_usage(),
+        //                     ram: p.memory(),
+        //                     send_t: 0.0,
+        //                     recv_t: 0.0,
+        //                     delay_t: 0.0,
+        //                     scatter_t: 0.0,
+        //                     progress: 0.0,
+        //                 },
+        //             )
+        //         }),
+        // );
+
+        let mut map = HashMap::new();
+
+        for (k, v) in sys.processes()
+                        .iter()
+                        // .map(|(pid, proc)| proc)
+                        .filter(|(_pid, p)| p.name() == proc_name)
+                        .map(|(pid, p)| {
+                            (
+                                *pid,
+                                Self {
+                                    node_id,
+                                    pid: *pid,
+                                    cpu: p.cpu_usage(),
+                                    ram: p.memory(),
+                                    send_t: 0.0,
+                                    recv_t: 0.0,
+                                    delay_t: 0.0,
+                                    scatter_t: 0.0,
+                                    progress: 0.0,
+                                },
+                            )
+                        }) {
+            map.insert(k, v);
+        };
+
+        return map;
     }
 
     pub fn new(pid: i32, node_id: u8, sys: &mut Sys) -> Self {

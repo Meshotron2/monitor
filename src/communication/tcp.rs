@@ -6,6 +6,7 @@ use std::io::{Read, Write};
 use std::net::{Shutdown, TcpListener, TcpStream};
 use std::sync::{Arc, Mutex};
 use std::thread;
+use std::convert::TryInto;
 use sysinfo::{System, SystemExt};
 
 /// Starts the TCP server

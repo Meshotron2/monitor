@@ -6,7 +6,7 @@ pub fn start_file_server(ip: &str, port: usize, file_name: &'static str) {
 	for stream in listener.incoming() {
 		match stream {
 			Ok(stream) => {
-				thread::spawn(|| receive_file(stream, file_name));		
+				thread::spawn(move || receive_file(stream, file_name));		
 			}
 			Err(e) => {
 				println!("Error: {}", e);
