@@ -23,7 +23,8 @@ pub fn run(
 ) {
     // communication::http_requests::test();
     let node_server_handle = thread::spawn(move || start_server(ip, cluster_port, proc_name));
-    let file_server_handle = thread::spawn(move || start_file_server(ip, file_transfer_port, "received.dwm"));
+    let file_server_handle =
+        thread::spawn(move || start_file_server(ip, file_transfer_port, "received.dwm"));
 
     let _ = node_server_handle.join();
     let _ = file_server_handle.join();

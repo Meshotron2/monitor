@@ -76,7 +76,7 @@ fn handle_client(
     let mut data = [0; 6 * 4]; // PID: i32, percentage: f32, send_t, recv_t, delay_t, scatter_t
                                // let node_url = String::from("http://127.0.0.1:8080/monitor/node");
                                // let proc_url = String::from("http://127.0.0.1:8080/monitor/proc");
-    let server_addr = String::from("127.0.0.1:9999");
+    let server_addr = String::from("127.0.0.1:8888");
 
     loop {
         match stream.read(&mut data) {
@@ -97,7 +97,7 @@ fn handle_client(
                 // node.update(sys);
                 // send_update(node, &server_addr);
                 if let Some(p) = procs.get_mut(&pid) {
-                    p.update(progress, &mut *sys);
+                    p.update(progress, send_t, recv_t, delay_t, scatter_t, &mut *sys);
 
                     println!("SEND: {}", &p.serialize());
 

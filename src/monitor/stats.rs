@@ -78,6 +78,10 @@ pub struct ProcData {
     pid: i32,
     cpu: f32,
     ram: u64,
+    send_t: f32,
+    recv_t: f32,
+    delay_t: f32,
+    scatter_t: f32,
     progress: f32,
 }
 
@@ -99,6 +103,10 @@ impl ProcData {
                             pid: *pid,
                             cpu: p.cpu_usage(),
                             ram: p.memory(),
+                            send_t: 0.0,
+                            recv_t: 0.0,
+                            delay_t: 0.0,
+                            scatter_t: 0.0,
                             progress: 0.0,
                         },
                     )
@@ -121,6 +129,10 @@ impl ProcData {
                 pid: pid,
                 cpu: p.cpu_usage(),
                 ram: p.memory(),
+                send_t: 0.0,
+                recv_t: 0.0,
+                delay_t: 0.0,
+                scatter_t: 0.0,
                 progress: 0.0,
             },
             None => Self {
@@ -128,6 +140,10 @@ impl ProcData {
                 pid: 0,
                 cpu: 0.0,
                 ram: 0,
+                send_t: 0.0,
+                recv_t: 0.0,
+                delay_t: 0.0,
+                scatter_t: 0.0,
                 progress: 0.0,
             },
         }
@@ -137,7 +153,15 @@ impl ProcData {
     /// - RAM usage
     /// - CPU usage
     /// - progress
-    pub fn update(&mut self, progress: f32, sys: &mut Sys) {
+    pub fn update(
+        &mut self,
+        progress: f32,
+        send_t: f32,
+        recv_t: f32,
+        delay_t: f32,
+        scatter_t: f32,
+        sys: &mut Sys,
+    ) {
         sys.refresh_all();
 
         let proc_opt = sys.process(self.pid);
@@ -147,11 +171,19 @@ impl ProcData {
                 self.ram = p.memory();
                 self.cpu = p.cpu_usage();
                 self.progress = progress;
+                self.send_t = send_t;
+                self.recv_t = recv_t;
+                self.delay_t = delay_t;
+                self.scatter_t = scatter_t;
             }
             None => {
                 self.ram = 0;
                 self.cpu = 0.0;
                 self.progress = 0.0;
+                self.send_t = 0.0;
+                self.recv_t = 0.0;
+                self.delay_t = 0.0;
+                self.scatter_t = 0.0;
             }
         };
     }
@@ -228,22 +260,26 @@ impl RequestSerializable for NodeData {
 impl RequestSerializable for ProcData {
     fn serialize(&self) -> String {
         /*
-            pid: i32,
+        pid: i32,
         cpu: f32,
         ram: u64,
         progress: usize,
-             */
+        */
         let node_id = self.node_id.to_string();
         let pid = self.pid.to_string();
         let cpu = self.cpu.to_string();
         let ram = self.ram.to_string();
         let progress = self.progress.to_string();
+        let send_t = self.send_t.to_string();
+        let recv_t = self.recv_t.to_string();
+        let delay_t = self.delay_t.to_string();
+        let scatter_t = self.scatter_t.to_string();
 
-        let mut res =
-            String::with_capacity(25 + pid.len() + cpu.len() + ram.len() + progress.len());
+        // let mut res =2
+        //     String::with_capacity(25 + pid.len() + cpu.len() + ram.len() + progress.len());
 
         //res = "?pid=".to_owned() + &pid + "&cpu=" + &cpu + "&ram=" + &ram + "&progress=" + &progress;
-        res = "{\"pid\":".to_owned()
+        let res = "{\"pid\":".to_owned()
             + &pid
             + ",\"nodeId\":"
             + &node_id
@@ -253,6 +289,14 @@ impl RequestSerializable for ProcData {
             + &ram
             + ",\"progress\":"
             + &progress
+            + ",\"sendTime\":"
+            + &send_t
+            + ",\"receiveTime\":"
+            + &recv_t
+            + ",\"delayTime\":"
+            + &delay_t
+            + ",\"scatterTime\":"
+            + &scatter_t
             + "}";
 
         return res;
