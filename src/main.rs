@@ -3,5 +3,10 @@ fn main() {
     // 0-1023 – Well known ports
     // 1024-49151 - Registered Port
     // 49152-65535 - free to use
-    monitor::run("127.0.0.1", 49152, 49153, "test_client");
+
+    let args: Vec<String> = std::env::args().collect();
+
+    let ip = args[1].clone();
+
+    monitor::run(ip, 49152, 49153, "test_client");
 }

@@ -16,13 +16,14 @@ mod monitor {
 }
 
 pub fn run(
-    ip: &'static str,
+    ip: String,
     cluster_port: usize,
     file_transfer_port: usize,
     proc_name: &'static str,
 ) {
     // communication::http_requests::test();
-    let node_server_handle = thread::spawn(move || start_server(ip, cluster_port, proc_name));
+    let ip1 = ip.clone();
+    let node_server_handle = thread::spawn(move || start_server(ip1, cluster_port, proc_name));
     let file_server_handle =
         thread::spawn(move || start_file_server(ip, file_transfer_port, "received.dwm"));
 

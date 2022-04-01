@@ -13,7 +13,7 @@ use sysinfo::{System, SystemExt};
 ///
 /// # Acknowledgements
 /// Based on <https://riptutorial.com/rust/example/4404/a-simple-tcp-client-and-server-application--echo>
-pub fn start_server(ip: &str, port: usize, proc_name: &str) {
+pub fn start_server(ip: String, port: usize, proc_name: &str) {
     let mut sys = System::new_all();
     let node = NodeData::new();
 

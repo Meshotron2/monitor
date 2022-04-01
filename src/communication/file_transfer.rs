@@ -1,6 +1,6 @@
 use std::{net::{TcpListener, TcpStream}, thread, fs::File, io::{Read, Write}};
 
-pub fn start_file_server(ip: &str, port: usize, file_name: &'static str) {
+pub fn start_file_server(ip: String, port: usize, file_name: &'static str) {
     let listener = TcpListener::bind(ip.to_owned() + ":" + &*port.to_string()).unwrap();
 
 	for stream in listener.incoming() {
