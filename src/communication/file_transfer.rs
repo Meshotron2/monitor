@@ -32,10 +32,16 @@ pub fn start_file_server(ip: String, port: usize, file_name: &'static str) {
 /// with the help from [SO](https://stackoverflow.com/questions/53826371/how-to-create-a-binary-file-with-rust)
 fn receive_file(mut stream: TcpStream, file_name: &str, counter: &mut i32) {
     let file_name = file_name.to_owned() + &counter.to_string() + ".dwm";
+	println!("Writing to {}", file_name);
     *counter += 1;
+    // let terminator = '\0' as u8;
     if let Ok(mut f) = File::create(file_name) {
         let mut byte = [0u8; 1];
-        while let Ok(_) = stream.read(&mut byte) {
+        while let Ok(n) = stream.read(&mut byte) {
+            if n == 0 {
+                break;
+            }
+            // println!("{}, {}", n, byte[0]);
             f.write(&byte).unwrap();
         }
     }
