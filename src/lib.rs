@@ -25,7 +25,7 @@ pub fn run(
     let ip1 = ip.clone();
     let node_server_handle = thread::spawn(move || start_server(ip1, cluster_port, proc_name));
     let file_server_handle =
-        thread::spawn(move || start_file_server(ip, file_transfer_port, "received.dwm"));
+        thread::spawn(move || start_file_server(ip, file_transfer_port, "received"));
 
     let _ = node_server_handle.join();
     let _ = file_server_handle.join();
