@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["run",""]]});
+initSidebarItems({"fn":[["run","Runs the program"]]});

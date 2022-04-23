@@ -9,7 +9,13 @@ use std::thread;
 use std::convert::TryInto;
 use sysinfo::{System, SystemExt};
 
-/// Starts the TCP server
+/// Starts the TCP server that communicates usage and progress data to the server
+///
+/// # Arguments
+///
+/// - `ip`: The ip to start the server on
+/// - `port`: The port to bind the server to
+/// - `proc_name`: The name of the processes to gather usage data on
 ///
 /// # Acknowledgements
 /// Based on <https://riptutorial.com/rust/example/4404/a-simple-tcp-client-and-server-application--echo>
@@ -63,7 +69,7 @@ pub fn start_server(ip: String, port: usize, proc_name: &str) {
 /// Handles a client connection
 ///
 /// # Protocol
-/// The messages must be on the format `<pid>:<progress>`.
+/// To see details on the protocol refer to [process_input]
 ///
 /// # Acknowledgements
 /// Based on <https://riptutorial.com/rust/example/4404/a-simple-tcp-client-and-server-application--echo>
@@ -75,8 +81,8 @@ fn handle_client(
 ) {
     // let mut data = [0; 5 + 1 + 7 + 1]; // using 50 byte buffer
     let mut data = [0; 6 * 4]; // PID: i32, percentage: f32, send_t, recv_t, delay_t, scatter_t
-                               // let node_url = String::from("http://127.0.0.1:8080/monitor/node");
-                               // let proc_url = String::from("http://127.0.0.1:8080/monitor/proc");
+    // let node_url = String::from("http://127.0.0.1:8080/monitor/node");
+    // let proc_url = String::from("http://127.0.0.1:8080/monitor/proc");
     let server_addr = String::from("127.0.0.1:8888");
 
     loop {
@@ -142,23 +148,28 @@ fn read_f32(buff: &[u8]) -> f32 {
 
 /// Validates the input and fetches the PID and progress from it.
 ///
-/// input must be of type `<pid>:<progress>`,
-/// where `pid` is a valid process id in `i32` and `progress` is `0 <= progress <= 100` `usize`
-/// These values have to be padded so `pid` takes **5** characters and `progress` takes **3**,
-/// for a total  of **9** bytes
+/// # Parameters
 ///
-/// If `pid` does not match, `-1` is returned
-/// If `progress` does not match, `200` is returned
+/// - `input`: the bytes received from the server
 ///
+/// # Protocol
+/// Messages should be a stream of bytes with the following elements, in this specific order:
+///
+/// 1. pid: i32, the communicating process' id
+/// 1. progress: f32, the percentage of progress towards the end. Should be `0 <= progress <= 100`
+/// 1. send time: f32, the time it took to send the scatter pass data to the neighbor nodes
+/// 1. receive time: f32, the time it took to receive the required data from the neighbor nodes after the scatter pass
+/// 1. delay time: f32, the time the delay pass took
+/// 1. scatter time: f32, the time the scatter pass took
 fn process_input(input: &[u8]) -> (i32, f32, f32, f32, f32, f32) {
-    return (
+    (
         read_i32(&input[0..4]),
         read_f32(&input[4..8]),
         read_f32(&input[8..12]),
         read_f32(&input[12..16]),
         read_f32(&input[16..20]),
         read_f32(&input[20..24]),
-    );
+    )
 
     // let input = std::str::from_utf8(input).ok().unwrap();
     // println!("RAW: {}", input);
@@ -173,6 +184,12 @@ fn process_input(input: &[u8]) -> (i32, f32, f32, f32, f32, f32) {
     // );
 }
 
+/// Sends the data to the server
+///
+/// # Parameters
+///
+/// - `request`: The `RequestSerializable` to be sent to the server
+/// - `endpoint`: A string in the form `<ip>:<port>` that contains the ip and port to send the data to
 fn send_update(request: &dyn RequestSerializable, endpoint: &str) {
     match TcpStream::connect(endpoint) {
         Ok(mut stream) => {
@@ -190,6 +207,12 @@ fn send_update(request: &dyn RequestSerializable, endpoint: &str) {
     println!("Terminated.");
 }
 
-fn fetch_message(mut a: &mut [u8], data: &String) {
+/// Converts a string into a byte array
+///
+/// # Parameters
+///
+/// - `a`: The byte array to write to
+/// - `data`: The string to convert into bytes
+fn fetch_message(mut a: &mut [u8], data: &str) {
     write!(a, "{}", data).unwrap();
 }

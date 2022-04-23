@@ -18,10 +18,10 @@ typedef struct MonitorData
 {
     int32_t pid;
     float percentage;
-    // float t_envio;
-    // float t_recepção; 
-    // float t_delay_pass; 
-    // float t_scatter_pass;
+    float t_envio;
+    float t_rececao; 
+    float t_delay_pass; 
+    float t_scatter_pass;
 };
 
 // https://www.geeksforgeeks.org/tcp-server-client-implementation-in-c/
@@ -75,7 +75,7 @@ void monitorSend(float percentage)
 {    
     //memset(buff, 0, MAX);
     // snprintf(buff, MAX+1, "%05d:%7.3f", pid, percentage);
-    struct MonitorData md = {pid, percentage};
+    struct MonitorData md = {pid, percentage, 1, 2, 3, 4};
     // serialize(&md);
     write(sockfd, &md, sizeof(struct MonitorData));
 }

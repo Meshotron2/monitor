@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;monitor&#x2F;stats.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>stats.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../monitor/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;monitor&#x2F;stats.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>stats.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><script defer src="../../../main.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script>
+    <noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../monitor/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -226,12 +227,118 @@
 <span id="226">226</span>
 <span id="227">227</span>
 <span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::communication::http_requests::RequestSerializable</span>;
+<span class="kw">use</span> <span class="ident">rand::Rng</span>;
 <span class="kw">use</span> <span class="ident">std::collections::HashMap</span>;
 <span class="kw">use</span> <span class="ident">sysinfo</span>::{<span class="ident">ComponentExt</span>, <span class="ident">ProcessExt</span>, <span class="ident">ProcessorExt</span>, <span class="ident">System</span> <span class="kw">as</span> <span class="ident">Sys</span>, <span class="ident">SystemExt</span>};
 
 <span class="doccomment">/// Stores usage data relative to the node</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">NodeData</span> {
+    <span class="ident">node_id</span>: <span class="ident">u8</span>,
     <span class="ident">cores</span>: <span class="ident">usize</span>,
     <span class="ident">threads</span>: <span class="ident">usize</span>,
     <span class="ident">cpu_usage</span>: <span class="ident">f32</span>,
@@ -245,6 +352,7 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
         <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">Sys::new_all</span>();
 
+        <span class="kw">let</span> <span class="ident">node_id</span> <span class="op">=</span> <span class="ident">rand::thread_rng</span>().<span class="ident">gen</span>();
         <span class="kw">let</span> <span class="ident">used_ram</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">used_memory</span>();
         <span class="kw">let</span> <span class="ident">total_ram</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">total_memory</span>();
         <span class="kw">let</span> <span class="ident">cores</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">physical_core_count</span>().<span class="ident">unwrap</span>();
@@ -258,7 +366,10 @@
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">comp</span><span class="op">|</span> <span class="ident">comp</span>.<span class="ident">temperature</span>())
             .<span class="ident">collect</span>();
 
+        <span class="comment">//println!(&quot;Node created {node_id}&quot;);</span>
+
         <span class="kw">return</span> <span class="ident">NodeData</span> {
+            <span class="ident">node_id</span>,
             <span class="ident">cores</span>,
             <span class="ident">threads</span>,
             <span class="ident">cpu_usage</span>,
@@ -272,7 +383,7 @@
     <span class="doccomment">/// - CPU usage</span>
     <span class="doccomment">/// - used RAM</span>
     <span class="doccomment">/// - temperature (ºC)</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">update</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">sys</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Sys</span>) {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">update</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">sys</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Sys</span>) {
         <span class="ident">sys</span>.<span class="ident">refresh_all</span>();
 
         <span class="self">self</span>.<span class="ident">cpu_usage</span> <span class="op">=</span> <span class="ident">sys</span>.<span class="ident">global_processor_info</span>().<span class="ident">cpu_usage</span>();
@@ -285,43 +396,84 @@
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">comp</span><span class="op">|</span> <span class="ident">comp</span>.<span class="ident">temperature</span>())
             .<span class="ident">collect</span>();
     }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_id</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u8</span> {
+        <span class="kw">return</span> <span class="self">self</span>.<span class="ident">node_id</span>;
+    }
 }
 
 <span class="doccomment">/// Stores data relative to a process</span>
 <span class="doccomment">/// This includes both data regarding the thread itself (pid CPU usage and RAM)</span>
 <span class="doccomment">/// and progress of whatever process is running</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ProcData</span> {
+    <span class="ident">node_id</span>: <span class="ident">u8</span>,
     <span class="ident">pid</span>: <span class="ident">i32</span>,
     <span class="ident">cpu</span>: <span class="ident">f32</span>,
     <span class="ident">ram</span>: <span class="ident">u64</span>,
-    <span class="ident">progress</span>: <span class="ident">usize</span>,
+    <span class="ident">send_t</span>: <span class="ident">f32</span>,
+    <span class="ident">recv_t</span>: <span class="ident">f32</span>,
+    <span class="ident">delay_t</span>: <span class="ident">f32</span>,
+    <span class="ident">scatter_t</span>: <span class="ident">f32</span>,
+    <span class="ident">progress</span>: <span class="ident">f32</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">ProcData</span> {
     <span class="doccomment">/// Generates a new HashMap with all processes with the given name</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fetch_all</span>(<span class="ident">proc_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">sys</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Sys</span>) -&gt; <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">i32</span>, <span class="self">Self</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fetch_all</span>(<span class="ident">proc_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">node_id</span>: <span class="ident">u8</span>, <span class="ident">sys</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Sys</span>) -&gt; <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">i32</span>, <span class="self">Self</span><span class="op">&gt;</span> {
         <span class="ident">sys</span>.<span class="ident">refresh_all</span>();
 
-        <span class="kw">return</span> <span class="ident">HashMap::from_iter</span>(
-            <span class="ident">sys</span>.<span class="ident">processes</span>()
-                .<span class="ident">iter</span>()
-                <span class="comment">// .map(|(pid, proc)| proc)</span>
-                .<span class="ident">filter</span>(<span class="op">|</span>(<span class="ident">_pid</span>, <span class="ident">p</span>)<span class="op">|</span> <span class="ident">p</span>.<span class="ident">name</span>() <span class="op">==</span> <span class="ident">proc_name</span>)
-                .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">pid</span>, <span class="ident">p</span>)<span class="op">|</span> {
-                    (
-                        <span class="kw-2">*</span><span class="ident">pid</span>,
-                        <span class="self">Self</span> {
-                            <span class="ident">pid</span>: <span class="kw-2">*</span><span class="ident">pid</span>,
-                            <span class="ident">cpu</span>: <span class="ident">p</span>.<span class="ident">cpu_usage</span>(),
-                            <span class="ident">ram</span>: <span class="ident">p</span>.<span class="ident">memory</span>(),
-                            <span class="ident">progress</span>: <span class="number">0</span>,
-                        },
-                    )
-                }),
-        );
+        <span class="comment">// return HashMap::from_iter(</span>
+        <span class="comment">//     sys.processes()</span>
+        <span class="comment">//         .iter()</span>
+        <span class="comment">//         // .map(|(pid, proc)| proc)</span>
+        <span class="comment">//         .filter(|(_pid, p)| p.name() == proc_name)</span>
+        <span class="comment">//         .map(|(pid, p)| {</span>
+        <span class="comment">//             (</span>
+        <span class="comment">//                 *pid,</span>
+        <span class="comment">//                 Self {</span>
+        <span class="comment">//                     node_id,</span>
+        <span class="comment">//                     pid: *pid,</span>
+        <span class="comment">//                     cpu: p.cpu_usage(),</span>
+        <span class="comment">//                     ram: p.memory(),</span>
+        <span class="comment">//                     send_t: 0.0,</span>
+        <span class="comment">//                     recv_t: 0.0,</span>
+        <span class="comment">//                     delay_t: 0.0,</span>
+        <span class="comment">//                     scatter_t: 0.0,</span>
+        <span class="comment">//                     progress: 0.0,</span>
+        <span class="comment">//                 },</span>
+        <span class="comment">//             )</span>
+        <span class="comment">//         }),</span>
+        <span class="comment">// );</span>
+
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">map</span> <span class="op">=</span> <span class="ident">HashMap::new</span>();
+
+        <span class="kw">for</span> (<span class="ident">k</span>, <span class="ident">v</span>) <span class="kw">in</span> <span class="ident">sys</span>.<span class="ident">processes</span>()
+                        .<span class="ident">iter</span>()
+                        <span class="comment">// .map(|(pid, proc)| proc)</span>
+                        .<span class="ident">filter</span>(<span class="op">|</span>(<span class="ident">_pid</span>, <span class="ident">p</span>)<span class="op">|</span> <span class="ident">p</span>.<span class="ident">name</span>() <span class="op">==</span> <span class="ident">proc_name</span>)
+                        .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">pid</span>, <span class="ident">p</span>)<span class="op">|</span> {
+                            (
+                                <span class="kw-2">*</span><span class="ident">pid</span>,
+                                <span class="self">Self</span> {
+                                    <span class="ident">node_id</span>,
+                                    <span class="ident">pid</span>: <span class="kw-2">*</span><span class="ident">pid</span>,
+                                    <span class="ident">cpu</span>: <span class="ident">p</span>.<span class="ident">cpu_usage</span>(),
+                                    <span class="ident">ram</span>: <span class="ident">p</span>.<span class="ident">memory</span>(),
+                                    <span class="ident">send_t</span>: <span class="number">0.0</span>,
+                                    <span class="ident">recv_t</span>: <span class="number">0.0</span>,
+                                    <span class="ident">delay_t</span>: <span class="number">0.0</span>,
+                                    <span class="ident">scatter_t</span>: <span class="number">0.0</span>,
+                                    <span class="ident">progress</span>: <span class="number">0.0</span>,
+                                },
+                            )
+                        }) {
+            <span class="ident">map</span>.<span class="ident">insert</span>(<span class="ident">k</span>, <span class="ident">v</span>);
+        };
+
+        <span class="kw">return</span> <span class="ident">map</span>;
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">pid</span>: <span class="ident">i32</span>, <span class="ident">sys</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Sys</span>) -&gt; <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">pid</span>: <span class="ident">i32</span>, <span class="ident">node_id</span>: <span class="ident">u8</span>, <span class="ident">sys</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Sys</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">sys</span>.<span class="ident">refresh_all</span>();
         <span class="kw">let</span> <span class="ident">p1</span> <span class="op">=</span> <span class="ident">sys</span>
             .<span class="ident">processes</span>()
@@ -332,16 +484,26 @@
 
         <span class="kw">match</span> <span class="ident">p1</span> {
             <span class="prelude-val">Some</span>(<span class="ident">p</span>) =&gt; <span class="self">Self</span> {
+                <span class="ident">node_id</span>,
                 <span class="ident">pid</span>: <span class="ident">pid</span>,
                 <span class="ident">cpu</span>: <span class="ident">p</span>.<span class="ident">cpu_usage</span>(),
                 <span class="ident">ram</span>: <span class="ident">p</span>.<span class="ident">memory</span>(),
-                <span class="ident">progress</span>: <span class="number">0</span>,
+                <span class="ident">send_t</span>: <span class="number">0.0</span>,
+                <span class="ident">recv_t</span>: <span class="number">0.0</span>,
+                <span class="ident">delay_t</span>: <span class="number">0.0</span>,
+                <span class="ident">scatter_t</span>: <span class="number">0.0</span>,
+                <span class="ident">progress</span>: <span class="number">0.0</span>,
             },
             <span class="prelude-val">None</span> =&gt; <span class="self">Self</span> {
+                <span class="ident">node_id</span>: <span class="number">0</span>,
                 <span class="ident">pid</span>: <span class="number">0</span>,
                 <span class="ident">cpu</span>: <span class="number">0.0</span>,
                 <span class="ident">ram</span>: <span class="number">0</span>,
-                <span class="ident">progress</span>: <span class="number">0</span>,
+                <span class="ident">send_t</span>: <span class="number">0.0</span>,
+                <span class="ident">recv_t</span>: <span class="number">0.0</span>,
+                <span class="ident">delay_t</span>: <span class="number">0.0</span>,
+                <span class="ident">scatter_t</span>: <span class="number">0.0</span>,
+                <span class="ident">progress</span>: <span class="number">0.0</span>,
             },
         }
     }
@@ -350,7 +512,15 @@
     <span class="doccomment">/// - RAM usage</span>
     <span class="doccomment">/// - CPU usage</span>
     <span class="doccomment">/// - progress</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">update</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">progress</span>: <span class="ident">usize</span>, <span class="ident">sys</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Sys</span>) {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">update</span>(
+        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
+        <span class="ident">progress</span>: <span class="ident">f32</span>,
+        <span class="ident">send_t</span>: <span class="ident">f32</span>,
+        <span class="ident">recv_t</span>: <span class="ident">f32</span>,
+        <span class="ident">delay_t</span>: <span class="ident">f32</span>,
+        <span class="ident">scatter_t</span>: <span class="ident">f32</span>,
+        <span class="ident">sys</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Sys</span>,
+    ) {
         <span class="ident">sys</span>.<span class="ident">refresh_all</span>();
 
         <span class="kw">let</span> <span class="ident">proc_opt</span> <span class="op">=</span> <span class="ident">sys</span>.<span class="ident">process</span>(<span class="self">self</span>.<span class="ident">pid</span>);
@@ -360,11 +530,19 @@
                 <span class="self">self</span>.<span class="ident">ram</span> <span class="op">=</span> <span class="ident">p</span>.<span class="ident">memory</span>();
                 <span class="self">self</span>.<span class="ident">cpu</span> <span class="op">=</span> <span class="ident">p</span>.<span class="ident">cpu_usage</span>();
                 <span class="self">self</span>.<span class="ident">progress</span> <span class="op">=</span> <span class="ident">progress</span>;
+                <span class="self">self</span>.<span class="ident">send_t</span> <span class="op">=</span> <span class="ident">send_t</span>;
+                <span class="self">self</span>.<span class="ident">recv_t</span> <span class="op">=</span> <span class="ident">recv_t</span>;
+                <span class="self">self</span>.<span class="ident">delay_t</span> <span class="op">=</span> <span class="ident">delay_t</span>;
+                <span class="self">self</span>.<span class="ident">scatter_t</span> <span class="op">=</span> <span class="ident">scatter_t</span>;
             }
             <span class="prelude-val">None</span> =&gt; {
                 <span class="self">self</span>.<span class="ident">ram</span> <span class="op">=</span> <span class="number">0</span>;
                 <span class="self">self</span>.<span class="ident">cpu</span> <span class="op">=</span> <span class="number">0.0</span>;
-                <span class="self">self</span>.<span class="ident">progress</span> <span class="op">=</span> <span class="number">0</span>;
+                <span class="self">self</span>.<span class="ident">progress</span> <span class="op">=</span> <span class="number">0.0</span>;
+                <span class="self">self</span>.<span class="ident">send_t</span> <span class="op">=</span> <span class="number">0.0</span>;
+                <span class="self">self</span>.<span class="ident">recv_t</span> <span class="op">=</span> <span class="number">0.0</span>;
+                <span class="self">self</span>.<span class="ident">delay_t</span> <span class="op">=</span> <span class="number">0.0</span>;
+                <span class="self">self</span>.<span class="ident">scatter_t</span> <span class="op">=</span> <span class="number">0.0</span>;
             }
         };
     }
@@ -380,41 +558,55 @@
         used_ram: u64,
         temperature: Vec&lt;f32&gt;,
              */</span>
+        <span class="kw">let</span> <span class="ident">node_id</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">node_id</span>.<span class="ident">to_string</span>();
         <span class="kw">let</span> <span class="ident">cores</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">cores</span>.<span class="ident">to_string</span>();
         <span class="kw">let</span> <span class="ident">threads</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">threads</span>.<span class="ident">to_string</span>();
         <span class="kw">let</span> <span class="ident">cpu_usage</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">cpu_usage</span>.<span class="ident">to_string</span>();
         <span class="kw">let</span> <span class="ident">total_ram</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">total_ram</span>.<span class="ident">to_string</span>();
         <span class="kw">let</span> <span class="ident">used_ram</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">used_ram</span>.<span class="ident">to_string</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">temperature</span> <span class="op">=</span> <span class="ident">String::new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">temperature</span> <span class="op">=</span> <span class="ident">String::from</span>(<span class="string">&quot;[&quot;</span>);
 
-        <span class="kw">for</span> <span class="ident">v</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">temperature</span> {
-            <span class="ident">temperature</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">v</span>.<span class="ident">to_string</span>());
-            <span class="ident">temperature</span>.<span class="ident">push_str</span>(<span class="string">&quot;_&quot;</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;SENDING: {node_id}, {cpu_usage}, {total_ram}, {used_ram}&quot;</span>);
+
+        <span class="comment">// for v in &amp;self.temperature {</span>
+        <span class="comment">//     temperature.push_str(&amp;*v.to_string());</span>
+        <span class="comment">//     temperature.push_str(&quot;, &quot;);</span>
+        <span class="comment">// }</span>
+        <span class="kw">let</span> <span class="ident">siz</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">temperature</span>.<span class="ident">len</span>();
+        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">siz</span> {
+            <span class="ident">temperature</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">temperature</span>[<span class="ident">i</span>].<span class="ident">to_string</span>());
+            <span class="kw">if</span> <span class="ident">i</span> <span class="op">&lt;</span> <span class="ident">siz</span> <span class="op">-</span> <span class="number">1</span> {
+                <span class="ident">temperature</span>.<span class="ident">push_str</span>(<span class="string">&quot;, &quot;</span>);
+            }
         }
 
-        <span class="ident">temperature</span>.<span class="ident">trim</span>();
+        <span class="ident">temperature</span>.<span class="ident">push_str</span>(<span class="string">&quot;]&quot;</span>);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">String::with_capacity</span>(
-            <span class="number">61</span> <span class="op">+</span> <span class="ident">cores</span>.<span class="ident">len</span>()
-                <span class="op">+</span> <span class="ident">threads</span>.<span class="ident">len</span>()
-                <span class="op">+</span> <span class="ident">cpu_usage</span>.<span class="ident">len</span>()
-                <span class="op">+</span> <span class="ident">total_ram</span>.<span class="ident">len</span>()
-                <span class="op">+</span> <span class="ident">used_ram</span>.<span class="ident">len</span>()
-                <span class="op">+</span> <span class="ident">temperature</span>.<span class="ident">len</span>(),
-        );
+        <span class="comment">// temperature = temperature.trim();</span>
+
+        <span class="comment">// let mut res = String::with_capacity(</span>
+        <span class="comment">//     61 + cores.len()</span>
+        <span class="comment">//         + threads.len()</span>
+        <span class="comment">//         + cpu_usage.len()</span>
+        <span class="comment">//         + total_ram.len()</span>
+        <span class="comment">//         + used_ram.len()</span>
+        <span class="comment">//         + temperature.len(),</span>
+        <span class="comment">// );</span>
 
         <span class="comment">//res = &quot;?cores=&quot;.to_owned() + &amp;cores + &quot;&amp;threads=&quot; + &amp;threads + &quot;&amp;cpu_usage=&quot; + &amp;cpu_usage +</span>
         <span class="comment">//    &quot;&amp;total_ram=&quot; + &amp;total_ram + &quot;&amp;used_ram=&quot; + &amp;used_ram + &quot;&amp;temperature=&quot; + &amp;temperature;</span>
 
-        <span class="ident">res</span> <span class="op">=</span> <span class="string">&quot;{\&quot;cores\&quot;:&quot;</span>.<span class="ident">to_owned</span>()
+        <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="string">&quot;{\&quot;nodeId\&quot;:&quot;</span>.<span class="ident">to_owned</span>()
+            <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">node_id</span>
+            <span class="op">+</span> <span class="string">&quot;,\&quot;cores\&quot;:&quot;</span>
             <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">cores</span>
             <span class="op">+</span> <span class="string">&quot;,\&quot;threads\&quot;:&quot;</span>
             <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">threads</span>
-            <span class="op">+</span> <span class="string">&quot;,\&quot;cpu_usage\&quot;:&quot;</span>
+            <span class="op">+</span> <span class="string">&quot;,\&quot;cpu\&quot;:&quot;</span>
             <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">cpu_usage</span>
-            <span class="op">+</span> <span class="string">&quot;,\&quot;total_ram\&quot;:&quot;</span>
+            <span class="op">+</span> <span class="string">&quot;,\&quot;totalRam\&quot;:&quot;</span>
             <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">total_ram</span>
-            <span class="op">+</span> <span class="string">&quot;,\&quot;used_ram\&quot;:&quot;</span>
+            <span class="op">+</span> <span class="string">&quot;,\&quot;usedRam\&quot;:&quot;</span>
             <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">used_ram</span>
             <span class="op">+</span> <span class="string">&quot;,\&quot;temperature\&quot;:&quot;</span>
             <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">temperature</span>
@@ -427,28 +619,43 @@
 <span class="kw">impl</span> <span class="ident">RequestSerializable</span> <span class="kw">for</span> <span class="ident">ProcData</span> {
     <span class="kw">fn</span> <span class="ident">serialize</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
         <span class="comment">/*
-            pid: i32,
+        pid: i32,
         cpu: f32,
         ram: u64,
         progress: usize,
-             */</span>
+        */</span>
+        <span class="kw">let</span> <span class="ident">node_id</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">node_id</span>.<span class="ident">to_string</span>();
         <span class="kw">let</span> <span class="ident">pid</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">pid</span>.<span class="ident">to_string</span>();
         <span class="kw">let</span> <span class="ident">cpu</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">cpu</span>.<span class="ident">to_string</span>();
         <span class="kw">let</span> <span class="ident">ram</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">ram</span>.<span class="ident">to_string</span>();
         <span class="kw">let</span> <span class="ident">progress</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">progress</span>.<span class="ident">to_string</span>();
+        <span class="kw">let</span> <span class="ident">send_t</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">send_t</span>.<span class="ident">to_string</span>();
+        <span class="kw">let</span> <span class="ident">recv_t</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">recv_t</span>.<span class="ident">to_string</span>();
+        <span class="kw">let</span> <span class="ident">delay_t</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">delay_t</span>.<span class="ident">to_string</span>();
+        <span class="kw">let</span> <span class="ident">scatter_t</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">scatter_t</span>.<span class="ident">to_string</span>();
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">res</span> <span class="op">=</span>
-            <span class="ident">String::with_capacity</span>(<span class="number">25</span> <span class="op">+</span> <span class="ident">pid</span>.<span class="ident">len</span>() <span class="op">+</span> <span class="ident">cpu</span>.<span class="ident">len</span>() <span class="op">+</span> <span class="ident">ram</span>.<span class="ident">len</span>() <span class="op">+</span> <span class="ident">progress</span>.<span class="ident">len</span>());
+        <span class="comment">// let mut res =2</span>
+        <span class="comment">//     String::with_capacity(25 + pid.len() + cpu.len() + ram.len() + progress.len());</span>
 
         <span class="comment">//res = &quot;?pid=&quot;.to_owned() + &amp;pid + &quot;&amp;cpu=&quot; + &amp;cpu + &quot;&amp;ram=&quot; + &amp;ram + &quot;&amp;progress=&quot; + &amp;progress;</span>
-        <span class="ident">res</span> <span class="op">=</span> <span class="string">&quot;{\&quot;pid\&quot;:&quot;</span>.<span class="ident">to_owned</span>()
+        <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="string">&quot;{\&quot;pid\&quot;:&quot;</span>.<span class="ident">to_owned</span>()
             <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">pid</span>
+            <span class="op">+</span> <span class="string">&quot;,\&quot;nodeId\&quot;:&quot;</span>
+            <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">node_id</span>
             <span class="op">+</span> <span class="string">&quot;,\&quot;cpu\&quot;:&quot;</span>
             <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">cpu</span>
             <span class="op">+</span> <span class="string">&quot;,\&quot;ram\&quot;:&quot;</span>
             <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">ram</span>
             <span class="op">+</span> <span class="string">&quot;,\&quot;progress\&quot;:&quot;</span>
             <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">progress</span>
+            <span class="op">+</span> <span class="string">&quot;,\&quot;sendTime\&quot;:&quot;</span>
+            <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">send_t</span>
+            <span class="op">+</span> <span class="string">&quot;,\&quot;receiveTime\&quot;:&quot;</span>
+            <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">recv_t</span>
+            <span class="op">+</span> <span class="string">&quot;,\&quot;delayTime\&quot;:&quot;</span>
+            <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">delay_t</span>
+            <span class="op">+</span> <span class="string">&quot;,\&quot;scatterTime\&quot;:&quot;</span>
+            <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">scatter_t</span>
             <span class="op">+</span> <span class="string">&quot;}&quot;</span>;
 
         <span class="kw">return</span> <span class="ident">res</span>;
@@ -456,5 +663,4 @@
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="monitor" data-search-index-js="../../../search-index.js" data-search-js="../../../search.js"></div>
-    <script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script>
 </body></html>

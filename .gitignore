@@ -3,3 +3,4 @@
 /monitor.iml
 /.idea/
 !/target/doc/*
+*.dwm
