@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["run","Runs the program"]]});
+initSidebarItems({"fn":[["run","Runs the program"]],"mod":[["communication","Holds all communication interfaces"],["monitor","The code that gathers information on processes "]]});
