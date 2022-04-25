@@ -4,6 +4,18 @@ use std::collections::HashMap;
 use sysinfo::{ComponentExt, ProcessExt, ProcessorExt, System as Sys, SystemExt};
 
 /// Stores usage data relative to the node
+///
+/// A node is the data of a physical device running one or more instances of the cluster program.
+/// In our case, a node is a RaspberryPi
+///
+/// # Properties
+/// -`node_id`: The ID of this NodeData object
+/// -`cores`: The number of cores of the node
+/// -`threads`: The number of threads of the cluster program running
+/// -`cpu_usage`: The percentage of the CPU used in total
+/// -`total_ram`: The total RAM available on the node
+/// -`used_ram`: The RAM used in the node
+/// -`temperature`: The temperature in ºC of each CPU core
 #[derive(Debug)]
 pub struct NodeData {
     node_id: u8,
@@ -36,7 +48,7 @@ impl NodeData {
 
         //println!("Node created {node_id}");
 
-        return NodeData {
+        NodeData {
             node_id,
             cores,
             threads,
@@ -44,13 +56,17 @@ impl NodeData {
             total_ram,
             used_ram,
             temperature,
-        };
+        }
     }
 
     /// Updates volatile data.
     /// - CPU usage
     /// - used RAM
     /// - temperature (ºC)
+    ///
+    /// # Arguments
+    ///
+    /// - `sys`: An instance of [Sys] to get the usage data
     pub fn update(&mut self, sys: &mut Sys) {
         sys.refresh_all();
 
@@ -66,13 +82,31 @@ impl NodeData {
     }
 
     pub fn get_id(&self) -> u8 {
-        return self.node_id;
+        self.node_id
+    }
+
+    pub fn set_id(&mut self, id: u8) {
+        self.node_id = id;
     }
 }
 
-/// Stores data relative to a process
+/// Stores data relative to a process.
 /// This includes both data regarding the thread itself (pid CPU usage and RAM)
-/// and progress of whatever process is running
+/// and process' metadata (percentage of the task completed and times of each step).
+///
+/// A process is an instance of the dwm program running on a node.
+/// There can be several instances in the same node, ideally one per core minus one.
+///
+/// # Properties
+/// -`node_id`: The id of the node this process belongs to
+/// -`pid`: The PID of this process
+/// -`cpu`: The CPU usage of this process
+/// -`ram`: The RAM consumed by this process
+/// -`send_t`: The time it took to send data to the neighbor nodes
+/// -`recv_t`: The time it took to receive data from the neighbor nodes
+/// -`delay_t`: The time the delay pass took
+/// -`scatter_t`: The time the scatter pass took
+/// -`progress`: The progress percentage
 pub struct ProcData {
     node_id: u8,
     pid: i32,
@@ -87,6 +121,12 @@ pub struct ProcData {
 
 impl ProcData {
     /// Generates a new HashMap with all processes with the given name
+    ///
+    /// # Arguments
+    ///
+    /// - `proc_name`: The name of the process to analyse
+    /// - `node_id`: This node's ID
+    /// - `sys`: An instance of [Sys] to get all the system usage data from
     pub fn fetch_all(proc_name: &str, node_id: u8, sys: &mut Sys) -> HashMap<i32, Self> {
         sys.refresh_all();
 
@@ -116,25 +156,25 @@ impl ProcData {
         let mut map = HashMap::new();
 
         for (k, v) in sys.processes()
-                        .iter()
-                        // .map(|(pid, proc)| proc)
-                        .filter(|(_pid, p)| p.name() == proc_name)
-                        .map(|(pid, p)| {
-                            (
-                                *pid,
-                                Self {
-                                    node_id,
-                                    pid: *pid,
-                                    cpu: p.cpu_usage(),
-                                    ram: p.memory(),
-                                    send_t: 0.0,
-                                    recv_t: 0.0,
-                                    delay_t: 0.0,
-                                    scatter_t: 0.0,
-                                    progress: 0.0,
-                                },
-                            )
-                        }) {
+            .iter()
+            // .map(|(pid, proc)| proc)
+            .filter(|(_pid, p)| p.name() == proc_name)
+            .map(|(pid, p)| {
+                (
+                    *pid,
+                    Self {
+                        node_id,
+                        pid: *pid,
+                        cpu: p.cpu_usage(),
+                        ram: p.memory(),
+                        send_t: 0.0,
+                        recv_t: 0.0,
+                        delay_t: 0.0,
+                        scatter_t: 0.0,
+                        progress: 0.0,
+                    },
+                )
+            }) {
             map.insert(k, v);
         };
 
@@ -180,6 +220,16 @@ impl ProcData {
     /// - RAM usage
     /// - CPU usage
     /// - progress
+    ///
+    /// In case this object's PID is not found, all values will be 0.
+    ///
+    /// # Parameters
+    /// -`progress`: The progress until the end of the task
+    /// -`send_t`: The time it took to send data to the neighbor nodes
+    /// -`recv_t`: The time it took to receive data from the neighbor nodes
+    /// -`delay_t`: The time the delay pass took
+    /// -`scatter_t`: The time the scatter pass took
+    /// -`sys`: An instance of [Sys] to get all the system usage data from
     pub fn update(
         &mut self,
         progress: f32,

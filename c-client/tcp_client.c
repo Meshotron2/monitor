@@ -24,11 +24,9 @@ typedef struct MonitorData
     float t_scatter_pass;
 };
 
-// https://www.geeksforgeeks.org/tcp-server-client-implementation-in-c/
-void monitorInit()
-{  
-    pid = getpid();
-    
+void monitorInit(int idfk)
+{
+    pid = idfk;
     // socket create and verification
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd == -1) {
@@ -38,12 +36,12 @@ void monitorInit()
     else
         printf("Socket successfully created..\n");
     memset(&servaddr, 0, sizeof(servaddr));
-   
+
     // assign IP, PORT
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
     servaddr.sin_port = htons(PORT);
-   
+
     // connect the client socket to server socket
     if (connect(sockfd, (SA*)&servaddr, sizeof(servaddr)) != 0) {
         printf("connection with the server failed...\n");
@@ -51,6 +49,13 @@ void monitorInit()
     }
     else
         printf("connected to the server..\n");
+}
+
+// https://www.geeksforgeeks.org/tcp-server-client-implementation-in-c/
+void monitorInitPID()
+{  
+    pid = getpid();
+    monitorInit(pid);
 }
 
 void monitorDestroy()

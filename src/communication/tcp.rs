@@ -7,7 +7,9 @@ use std::net::{Shutdown, TcpListener, TcpStream};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::convert::TryInto;
+use std::fs::File;
 use sysinfo::{System, SystemExt};
+use crate::communication::file_transfer::send_file;
 
 /// Starts the TCP server that communicates usage and progress data to the server
 ///
@@ -98,12 +100,26 @@ fn handle_client(
                 println!("Size: {size}");
                 let (pid, progress, send_t, recv_t, delay_t, scatter_t) =
                     process_input(&data[0..size]);
-                println!("Something");
                 println!("Post processing: {pid} @ {progress}% (send {send_t}, recv {recv_t}, delay {delay_t}, scatter {scatter_t})");
+                node.set_id(pid as u8);
 
-                // node.update(sys);
-                // send_update(node, &server_addr);
-                if let Some(p) = procs.get_mut(&pid) {
+                if progress == -1.0 {
+                    // signals the end of the transmission
+
+                    let mut i = 1;
+                    let mut name = format!("receiver_{}.pcm", i);
+
+                    while File::open(&name).is_ok() {
+                        println!("Found {}", name);
+                        send_file("127.0.0.1:5000", &name, node.get_id());
+
+                        name = format!("receiver_{}.pcm", i);
+                        i += 1;
+                    }
+
+                } else if let Some(p) = procs.get_mut(&pid) {
+                    // the process is valid
+
                     p.update(progress, send_t, recv_t, delay_t, scatter_t, &mut *sys);
 
                     println!("SEND: {}", &p.serialize());

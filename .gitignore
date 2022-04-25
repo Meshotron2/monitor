@@ -4,3 +4,5 @@
 /.idea/
 !/target/doc/*
 *.dwm
+*.pcm
+/c-client/tcp_client

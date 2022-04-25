@@ -1,9 +1,15 @@
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "tcp_client.c"
 
-#define ITER 56
+#define ITER 34
 
-int main(void)
+int main(int argc, char *argv[])
 {
+    int nid = atoi(argv[1]);
+    printf("%d", nid);
+
     long int n = 99999999;
     // monitorInit();
 
@@ -28,15 +34,19 @@ int main(void)
 
             if (is_prime) {
                 printf("Sending %7.3f...\n", 100*i/ITER);
-                monitorInit();
+                monitorInit(nid);
                 monitorSend(100*i/ITER);
                 monitorDestroy();
             }
         }
+
     }
 
-    printf("Ending...");
+    printf("Ending...\n");
     // monitorDestroy();
+    monitorInit(nid);
+    monitorSend(-1);
+    monitorDestroy();
     printf("Ended.");
 }
    
