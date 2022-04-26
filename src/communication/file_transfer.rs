@@ -1,3 +1,6 @@
+//! Holds methods to transfer and receive files.
+//! File reception is handled through a TCP server
+
 use std::{
     fs::File,
     io::{Read, Write},
@@ -8,15 +11,17 @@ use std::{
 use std::io::Seek;
 use byteorder::{ByteOrder, LittleEndian, NativeEndian, WriteBytesExt};
 
-/// Starts a server that receives files from the partitioner
+/// Starts a server that receives files from the partitioner.
+///
+/// Since the monitor should only receive room description files, the file extension is assumed to be .dwm.
 ///
 /// # Arguments
 ///
 /// - `ip`: The ip to start the server on
 /// - `port`: The port to bind the server to
-/// - `file_name`: The name of the file that will be received.
-/// All the files received will have the same name with a number appended.
-/// The file extension is assumed to be .dwm
+/// - `file_name`: The base name of the file that will be received.
+/// All the files received will have the same name with a number appended, representing the arrival
+/// order of the file.
 pub fn start_file_server(ip: String, port: usize, file_name: &'static str) {
     let listener = TcpListener::bind(ip + ":" + &*port.to_string()).unwrap();
 
@@ -39,37 +44,40 @@ pub fn start_file_server(ip: String, port: usize, file_name: &'static str) {
     }
 }
 
-/// Handles an incoming byte stream containing a file
-///
-/// # Protocol
-///
-/// The bytes stream should only contain the file
+/// Handles an incoming TCP byte stream containing a file
 ///
 /// # Arguments
 /// - `stream`: The incoming file TCP stream
 /// - `file_name`: The name to write the file to
 /// - `counter`: A counter with the number of files received
 ///
+/// # Protocol
+///
+/// The bytes stream should only contain the file
+///
 /// # Acknowledgements
-/// with the help from [SO](https://stackoverflow.com/questions/53826371/how-to-create-a-binary-file-with-rust)
+/// With the help from [Stack Overflow](HTTPS://Stackoverflow.com/questions/53826371/how-to-create-a-binary-file-with-rust)
 fn receive_file(mut stream: TcpStream, file_name: &str, counter: &mut i32) {
     let file_name = file_name.to_owned() + &counter.to_string() + ".dwm";
 	println!("Writing to {}", file_name);
+    
     *counter += 1;
-    // let terminator = '\0' as u8;
+    
     if let Ok(mut f) = File::create(file_name) {
         let mut byte = [0u8; 1];
         while let Ok(n) = stream.read(&mut byte) {
             if n == 0 {
                 break;
             }
-            // println!("{}, {}", n, byte[0]);
+            
             f.write_all(&byte).unwrap();
         }
     }
 }
 
 /// Sends a file over a TCP stream
+/// It is assumed only pcm files will be transmited and transmissions are only to the partitioner
+/// server.
 ///
 /// # Arguments
 /// - `endpoint`: A string in the format `<ip>:<port>` that tells where to send the file to
@@ -90,21 +98,6 @@ pub fn send_file(endpoint: &str, file_name: &str, node_number: u8) {
             stream.write_all(&*buff).unwrap();
 
             println!("Done! {} bytes", buff.len())
-
-            // let mut data = [0 as u8; 6]; // using 6 byte buffer
-            // match stream.read_exact(&mut data) {
-            //     Ok(_) => {
-            //         if &data == msg {
-            //             println!("Reply is ok!");
-            //         } else {
-            //             let text = from_utf8(&data).unwrap();
-            //             println!("Unexpected reply: {}", text);
-            //         }
-            //     },
-            //     Err(e) => {
-            //         println!("Failed to receive data: {}", e);
-            //     }
-            // }
         },
         Err(e) => {
             println!("Failed to connect: {}", e);

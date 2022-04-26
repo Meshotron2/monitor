@@ -1,5 +1,11 @@
-//! This crate allows for communication between the cluster and server and
-//! collection of performance metrics.
+//! The monitor program is the bridge between every DWM instance in a node and the partitioner
+//! server.
+//!
+//! It receives the progress and telemetry data from the DWM processes, 
+//! determines their system usage and sends it to the server.
+//! Also deals with file transfer of the partitions from the server to the node and the excitation 
+//! sound files from the node to the server.
+
 
 use std::thread;
 

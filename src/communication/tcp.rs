@@ -1,6 +1,13 @@
+//! Handles the lowest lever of TCP communications of the monitor.
+//! Provides methods to start a TCP server and to send data over TCP.
+//!
+//! Note that this module is not very generic, so if new functionality is needed it will probably
+//! require new methods.
+//!
+//! With help from [ThatsNoMoon](https://gist.github.com/ThatsNoMoon/edc16ab072d470d3a7f9d996c8fc9dec)
+
 use crate::communication::http_requests::RequestSerializable;
 use crate::monitor::stats::{NodeData, ProcData};
-/// With help from <https://gist.github.com/ThatsNoMoon/edc16ab072d470d3a7f9d996c8fc9dec>
 use std::collections::HashMap;
 use std::io::{Read, Write};
 use std::net::{Shutdown, TcpListener, TcpStream};
@@ -34,7 +41,6 @@ pub fn start_server(ip: String, port: usize, proc_name: &str) {
     let node = Arc::new(Mutex::new(node));
 
     let listener = TcpListener::bind(ip.to_owned() + ":" + &*port.to_string()).unwrap();
-    //listener.set_nonblocking(true).expect("Cannot be blocking");
     // accept connections and process them, spawning a new thread for each one
     println!("Server listening on port {}", port);
 
@@ -60,15 +66,18 @@ pub fn start_server(ip: String, port: usize, proc_name: &str) {
             }
             Err(e) => {
                 println!("Error: {}", e);
-                /* connection failed */
             }
         }
     }
-    // close the socket server
-    // drop(listener);
 }
 
 /// Handles a client connection
+///
+/// # Arguments
+/// -`stream`: The client's TCP stream
+/// -`procs`: The processes' object's list
+/// -`node`: The node's object
+/// -`sys`: [Sys] instance to fetch process data from
 ///
 /// # Protocol
 /// To see details on the protocol refer to [process_input]
@@ -83,8 +92,6 @@ fn handle_client(
 ) {
     // let mut data = [0; 5 + 1 + 7 + 1]; // using 50 byte buffer
     let mut data = [0; 6 * 4]; // PID: i32, percentage: f32, send_t, recv_t, delay_t, scatter_t
-    // let node_url = String::from("http://127.0.0.1:8080/monitor/node");
-    // let proc_url = String::from("http://127.0.0.1:8080/monitor/proc");
     let server_addr = String::from("127.0.0.1:8888");
 
     loop {
@@ -150,21 +157,24 @@ fn handle_client(
     }
 }
 
+/// Converts a byte array into an i32
 fn read_i32(buff: &[u8]) -> i32 {
     i32::from_le_bytes(buff[..4].try_into().unwrap())
 }
 
+/// Converts a byte array into an u32
 fn read_u32(buff: &[u8]) -> u32 {
     u32::from_le_bytes(buff[..4].try_into().unwrap())
 }
 
+/// Converts a byte array into an f32
 fn read_f32(buff: &[u8]) -> f32 {
     f32::from_bits(read_u32(buff))
 }
 
-/// Validates the input and fetches the PID and progress from it.
+/// Validates the bytes received from the stream and returns all data in the correct data types.
 ///
-/// # Parameters
+/// # Arguments
 ///
 /// - `input`: the bytes received from the server
 ///
@@ -186,23 +196,11 @@ fn process_input(input: &[u8]) -> (i32, f32, f32, f32, f32, f32) {
         read_f32(&input[16..20]),
         read_f32(&input[20..24]),
     )
-
-    // let input = std::str::from_utf8(input).ok().unwrap();
-    // println!("RAW: {}", input);
-
-    // let (str_pid, str_progress) = input.split_once(':').unwrap();
-
-    // println!("PID: {} @ {}%", str_pid, str_progress.trim());
-
-    // return (
-    //     str_pid.parse().unwrap_or(0),
-    //     str_progress.trim().parse::<f32>().unwrap_or(200.0),
-    // );
 }
 
 /// Sends the data to the server
 ///
-/// # Parameters
+/// # Arguments
 ///
 /// - `request`: The `RequestSerializable` to be sent to the server
 /// - `endpoint`: A string in the form `<ip>:<port>` that contains the ip and port to send the data to
