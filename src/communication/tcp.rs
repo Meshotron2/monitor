@@ -6,12 +6,11 @@
 //!
 //! With help from [ThatsNoMoon](https://gist.github.com/ThatsNoMoon/edc16ab072d470d3a7f9d996c8fc9dec)
 
-use crate::communication::file_transfer::{send_all_pcm, send_file};
+use crate::communication::file_transfer::send_all_pcm;
 use crate::communication::http_requests::RequestSerializable;
 use crate::monitor::stats::{NodeData, ProcData};
 use std::collections::HashMap;
 use std::convert::TryInto;
-use std::fs::File;
 use std::io::{Read, Write};
 use std::net::{Shutdown, TcpListener, TcpStream};
 use std::sync::{Arc, Mutex};
@@ -54,6 +53,7 @@ pub fn start_server(ip: String, port: usize, proc_name: String, server_addr: Str
                 let node_handle = Arc::clone(&node);
                 let sys_handle = Arc::clone(&sys);
 
+                let t = server_addr.clone();
                 thread::spawn(move || {
                     // connection succeeded
                     println!("Handling stuff");
@@ -62,7 +62,7 @@ pub fn start_server(ip: String, port: usize, proc_name: String, server_addr: Str
                     let mut nh = node_handle.lock().unwrap();
                     let mut sh = sys_handle.lock().unwrap();
 
-                    handle_client(stream, &mut *ph, &mut *nh, &mut *sh, server_addr.clone());
+                    handle_client(stream, &mut *ph, &mut *nh, &mut *sh, t);
                 });
             }
             Err(e) => {
