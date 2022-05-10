@@ -37,10 +37,18 @@ mod monitor {
 /// - `cluster_port`: The port to bind the cluster server to
 /// - `file_transfer_port`: The port to bint the file transfer server to
 /// - `proc_name`: The process name to gather usage data on
-pub fn run(ip: String, cluster_port: usize, file_transfer_port: usize, proc_name: String) {
+/// - `server_addr`: The address of the room partitioner server
+pub fn run(
+    ip: String,
+    cluster_port: usize,
+    file_transfer_port: usize,
+    proc_name: String,
+    server_addr: String,
+) {
     // communication::http_requests::test();
     let ip1 = ip.clone();
-    let node_server_handle = thread::spawn(move || start_server(ip1, cluster_port, proc_name));
+    let node_server_handle =
+        thread::spawn(move || start_server(ip1, cluster_port, proc_name, server_addr));
     let file_server_handle =
         thread::spawn(move || start_file_server(ip, file_transfer_port, "received"));
 

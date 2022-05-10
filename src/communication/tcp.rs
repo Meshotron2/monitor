@@ -25,10 +25,11 @@ use sysinfo::{System, SystemExt};
 /// - `ip`: The ip to start the server on
 /// - `port`: The port to bind the server to
 /// - `proc_name`: The name of the processes to gather usage data on
+/// - `server_addr`: The address of the room partitioner server
 ///
 /// # Acknowledgements
 /// Based on <https://riptutorial.com/rust/example/4404/a-simple-tcp-client-and-server-application--echo>
-pub fn start_server(ip: String, port: usize, proc_name: String) {
+pub fn start_server(ip: String, port: usize, proc_name: String, server_addr: String) {
     let mut sys = System::new_all();
     let node = NodeData::new();
 
@@ -61,7 +62,7 @@ pub fn start_server(ip: String, port: usize, proc_name: String) {
                     let mut nh = node_handle.lock().unwrap();
                     let mut sh = sys_handle.lock().unwrap();
 
-                    handle_client(stream, &mut *ph, &mut *nh, &mut *sh);
+                    handle_client(stream, &mut *ph, &mut *nh, &mut *sh, server_addr.clone());
                 });
             }
             Err(e) => {
@@ -78,6 +79,7 @@ pub fn start_server(ip: String, port: usize, proc_name: String) {
 /// -`procs`: The processes' object's list
 /// -`node`: The node's object
 /// -`sys`: [Sys] instance to fetch process data from
+/// - `server_addr`: The address of the room partitioner server
 ///
 /// # Protocol
 /// To see details on the protocol refer to [process_input]
@@ -89,10 +91,11 @@ fn handle_client(
     procs: &mut HashMap<i32, ProcData>,
     node: &mut NodeData,
     sys: &mut System,
+    server_addr: String,
 ) {
     // let mut data = [0; 5 + 1 + 7 + 1]; // using 50 byte buffer
     let mut data = [0; 6 * 4]; // PID: i32, percentage: f32, send_t, recv_t, delay_t, scatter_t
-    let server_addr = String::from("127.0.0.1:8888");
+                               // let server_addr = String::from("127.0.0.1:8888");
 
     loop {
         match stream.read(&mut data) {

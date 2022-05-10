@@ -6,10 +6,17 @@ pub struct Config {
     cluster_port: usize,
     file_transfer_port: usize,
     proc_name: String,
+    server_addr: String,
 }
 
 impl Config {
-    fn new(ip: String, cluster_port: usize, file_transfer_port: usize, proc_name: String) -> Self {
+    fn new(
+        ip: String,
+        cluster_port: usize,
+        file_transfer_port: usize,
+        proc_name: String,
+        server_addr: String,
+    ) -> Self {
         // TODO: Add checks
 
         Config {
@@ -17,6 +24,7 @@ impl Config {
             cluster_port,       // 49152
             file_transfer_port, // 49153
             proc_name,          // test_client
+            server_addr,        // 127.0.0.1:8888
         }
     }
 }
@@ -33,13 +41,15 @@ fn main() {
     let cluster_port = usize::from_str(args[2].as_str()).unwrap();
     let file_transfer_port = usize::from_str(args[3].as_str()).unwrap();
     let proc_name = args[4].clone();
+    let server_addr = args[5].clone();
 
-    let cfg = Config::new(ip, cluster_port, file_transfer_port, proc_name);
+    let cfg = Config::new(ip, cluster_port, file_transfer_port, proc_name, server_addr);
 
     monitor::run(
         cfg.ip,
         cfg.cluster_port,
         cfg.file_transfer_port,
         cfg.proc_name,
+        cfg.server_addr,
     );
 }

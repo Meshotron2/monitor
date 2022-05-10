@@ -1,7 +1,7 @@
 //! Holds methods to transfer and receive files.
 //! File reception is handled through a TCP server
 
-use byteorder::{BigEndian, LittleEndian, WriteBytesExt};
+use byteorder::{BigEndian, WriteBytesExt};
 use std::{
     fs,
     fs::File,
@@ -84,26 +84,34 @@ fn receive_file(mut stream: TcpStream, file_name: &str, counter: &mut i32) {
 /// - `file_name`: The name of the file to send
 /// - `node_number`: The number of the node this process is running on.
 /// It is necessary to know this due to the way the merger deals with the files
-pub fn send_file(endpoint: &str, file_name: &str, node_number: u8) {
-    println!("node {}", node_number as i32);
-    match TcpStream::connect(endpoint) {
-        Ok(mut stream) => {
-            let mut file = File::open(file_name).unwrap();
-            let mut buff = Vec::<u8>::new();
+// pub fn send_file(endpoint: &str, file_name: &str, node_number: u8) {
+//     println!("node {}", node_number as i32);
+//     match TcpStream::connect(endpoint) {
+//         Ok(mut stream) => {
+//             let mut file = File::open(file_name).unwrap();
+//             let mut buff = Vec::<u8>::new();
+//
+//             file.read_to_end(&mut buff).unwrap();
+//             let _ = stream.write_u8(node_number);
+//             let _ = stream.write_u64::<LittleEndian>(file.metadata().unwrap().len());
+//             stream.write_all(&*buff).unwrap();
+//
+//             println!("Done! {} bytes", buff.len())
+//         }
+//         Err(e) => {
+//             println!("Failed to connect: {}", e);
+//         }
+//     }
+// }
 
-            file.read_to_end(&mut buff).unwrap();
-            let _ = stream.write_u8(node_number);
-            let _ = stream.write_u64::<LittleEndian>(file.metadata().unwrap().len());
-            stream.write_all(&*buff).unwrap();
-
-            println!("Done! {} bytes", buff.len())
-        }
-        Err(e) => {
-            println!("Failed to connect: {}", e);
-        }
-    }
-}
-
+/// Sends all the pcm files over a TCP connection to the room partitioner.
+/// It is assumed only pcm files will be transmitted and transmissions are only to the partitioner
+/// server.
+///
+/// # Arguments
+/// - `endpoint`: A string in the format `<ip>:<port>` that tells where to send the file to
+/// - `node_number`: The number of the node this process is running on.
+/// It is necessary to know this due to the way the merger deals with the files
 pub fn send_all_pcm(endpoint: &str, node_number: u8) {
     let mut files: Vec<String> = fs::read_dir("./")
         .unwrap()
