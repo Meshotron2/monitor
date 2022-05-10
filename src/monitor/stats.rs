@@ -130,32 +130,10 @@ impl ProcData {
     pub fn fetch_all(proc_name: &str, node_id: u8, sys: &mut Sys) -> HashMap<i32, Self> {
         sys.refresh_all();
 
-        // return HashMap::from_iter(
-        //     sys.processes()
-        //         .iter()
-        //         // .map(|(pid, proc)| proc)
-        //         .filter(|(_pid, p)| p.name() == proc_name)
-        //         .map(|(pid, p)| {
-        //             (
-        //                 *pid,
-        //                 Self {
-        //                     node_id,
-        //                     pid: *pid,
-        //                     cpu: p.cpu_usage(),
-        //                     ram: p.memory(),
-        //                     send_t: 0.0,
-        //                     recv_t: 0.0,
-        //                     delay_t: 0.0,
-        //                     scatter_t: 0.0,
-        //                     progress: 0.0,
-        //                 },
-        //             )
-        //         }),
-        // );
-
         let mut map = HashMap::new();
 
-        for (k, v) in sys.processes()
+        for (k, v) in sys
+            .processes()
             .iter()
             // .map(|(pid, proc)| proc)
             .filter(|(_pid, p)| p.name() == proc_name)
@@ -174,9 +152,10 @@ impl ProcData {
                         progress: 0.0,
                     },
                 )
-            }) {
+            })
+        {
             map.insert(k, v);
-        };
+        }
 
         return map;
     }
@@ -298,21 +277,7 @@ impl RequestSerializable for NodeData {
             }
         }
 
-        temperature.push_str("]");
-
-        // temperature = temperature.trim();
-
-        // let mut res = String::with_capacity(
-        //     61 + cores.len()
-        //         + threads.len()
-        //         + cpu_usage.len()
-        //         + total_ram.len()
-        //         + used_ram.len()
-        //         + temperature.len(),
-        // );
-
-        //res = "?cores=".to_owned() + &cores + "&threads=" + &threads + "&cpu_usage=" + &cpu_usage +
-        //    "&total_ram=" + &total_ram + "&used_ram=" + &used_ram + "&temperature=" + &temperature;
+        temperature.push(']');
 
         let res = "{\"nodeId\":".to_owned()
             + &node_id

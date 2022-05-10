@@ -3,7 +3,7 @@
 
 #include "tcp_client.c"
 
-#define ITER 34
+#define ITER 17
 
 int main(int argc, char *argv[])
 {

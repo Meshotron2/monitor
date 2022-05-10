@@ -1,11 +1,10 @@
 //! The monitor program is the bridge between every DWM instance in a node and the partitioner
 //! server.
 //!
-//! It receives the progress and telemetry data from the DWM processes, 
+//! It receives the progress and telemetry data from the DWM processes,
 //! determines their system usage and sends it to the server.
-//! Also deals with file transfer of the partitions from the server to the node and the excitation 
+//! Also deals with file transfer of the partitions from the server to the node and the excitation
 //! sound files from the node to the server.
-
 
 use std::thread;
 
@@ -25,7 +24,7 @@ mod communication {
     pub mod tcp;
 }
 
-/// The code that gathers information on processes 
+/// The code that gathers information on processes
 mod monitor {
     pub mod stats;
 }
@@ -38,12 +37,7 @@ mod monitor {
 /// - `cluster_port`: The port to bind the cluster server to
 /// - `file_transfer_port`: The port to bint the file transfer server to
 /// - `proc_name`: The process name to gather usage data on
-pub fn run(
-    ip: String,
-    cluster_port: usize,
-    file_transfer_port: usize,
-    proc_name: &'static str,
-) {
+pub fn run(ip: String, cluster_port: usize, file_transfer_port: usize, proc_name: String) {
     // communication::http_requests::test();
     let ip1 = ip.clone();
     let node_server_handle = thread::spawn(move || start_server(ip1, cluster_port, proc_name));

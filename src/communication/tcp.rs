@@ -6,17 +6,17 @@
 //!
 //! With help from [ThatsNoMoon](https://gist.github.com/ThatsNoMoon/edc16ab072d470d3a7f9d996c8fc9dec)
 
+use crate::communication::file_transfer::{send_all_pcm, send_file};
 use crate::communication::http_requests::RequestSerializable;
 use crate::monitor::stats::{NodeData, ProcData};
 use std::collections::HashMap;
+use std::convert::TryInto;
+use std::fs::File;
 use std::io::{Read, Write};
 use std::net::{Shutdown, TcpListener, TcpStream};
 use std::sync::{Arc, Mutex};
 use std::thread;
-use std::convert::TryInto;
-use std::fs::File;
 use sysinfo::{System, SystemExt};
-use crate::communication::file_transfer::send_file;
 
 /// Starts the TCP server that communicates usage and progress data to the server
 ///
@@ -28,12 +28,12 @@ use crate::communication::file_transfer::send_file;
 ///
 /// # Acknowledgements
 /// Based on <https://riptutorial.com/rust/example/4404/a-simple-tcp-client-and-server-application--echo>
-pub fn start_server(ip: String, port: usize, proc_name: &str) {
+pub fn start_server(ip: String, port: usize, proc_name: String) {
     let mut sys = System::new_all();
     let node = NodeData::new();
 
     let procs = Arc::new(Mutex::new(ProcData::fetch_all(
-        proc_name,
+        &proc_name,
         node.get_id(),
         &mut sys,
     )));
@@ -116,14 +116,15 @@ fn handle_client(
                     let mut i = 1;
                     let mut name = format!("receiver_{}.pcm", i);
 
-                    while File::open(&name).is_ok() {
-                        println!("Found {}", name);
-                        send_file("127.0.0.1:5000", &name, node.get_id());
+                    send_all_pcm("127.0.0.1:5000", node.get_id());
 
-                        name = format!("receiver_{}.pcm", i);
-                        i += 1;
-                    }
-
+                    // while File::open(&name).is_ok() {
+                    //     println!("Found {}", name);
+                    //     send_file("127.0.0.1:5000", &name, node.get_id());
+                    //
+                    //     name = format!("receiver_{}.pcm", i);
+                    //     i += 1;
+                    // }
                 } else if let Some(p) = procs.get_mut(&pid) {
                     // the process is valid
 
@@ -223,7 +224,7 @@ fn send_update(request: &dyn RequestSerializable, endpoint: &str) {
 
 /// Converts a string into a byte array
 ///
-/// # Parameters
+/// # Arguments
 ///
 /// - `a`: The byte array to write to
 /// - `data`: The string to convert into bytes
