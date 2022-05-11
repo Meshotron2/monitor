@@ -40,7 +40,7 @@ pub fn start_server(ip: String, port: usize, proc_name: String, server_addr: Str
     let sys = Arc::new(Mutex::new(sys));
     let node = Arc::new(Mutex::new(node));
 
-    let listener = TcpListener::bind(ip.to_owned() + ":" + &*port.to_string()).unwrap();
+    let listener = TcpListener::bind(ip + ":" + &*port.to_string()).unwrap();
     // accept connections and process them, spawning a new thread for each one
     println!("Server listening on port {}", port);
 
@@ -55,9 +55,6 @@ pub fn start_server(ip: String, port: usize, proc_name: String, server_addr: Str
 
                 let t = server_addr.clone();
                 thread::spawn(move || {
-                    // connection succeeded
-                    println!("Handling stuff");
-
                     let mut ph = procs_handle.lock().unwrap();
                     let mut nh = node_handle.lock().unwrap();
                     let mut sh = sys_handle.lock().unwrap();
@@ -119,7 +116,7 @@ fn handle_client(
                     let mut i = 1;
                     let mut name = format!("receiver_{}.pcm", i);
 
-                    send_all_pcm("127.0.0.1:5000", node.get_id());
+                    send_all_pcm(&server_addr, node.get_id());
 
                     // while File::open(&name).is_ok() {
                     //     println!("Found {}", name);
@@ -211,7 +208,7 @@ fn process_input(input: &[u8]) -> (i32, f32, f32, f32, f32, f32) {
 fn send_update(request: &dyn RequestSerializable, endpoint: &str) {
     match TcpStream::connect(endpoint) {
         Ok(mut stream) => {
-            println!("Successfully connected to server in port 49152");
+            println!("Successfully connected to server at {}", endpoint);
 
             let mut a = [0; 256];
             fetch_message(&mut a, &request.serialize());
