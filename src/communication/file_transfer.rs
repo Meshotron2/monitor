@@ -112,7 +112,7 @@ fn receive_file(mut stream: TcpStream, file_name: &str, counter: &mut i32) {
 /// - `endpoint`: A string in the format `<ip>:<port>` that tells where to send the file to
 /// - `node_number`: The number of the node this process is running on.
 /// It is necessary to know this due to the way the merger deals with the files
-pub fn send_all_pcm(endpoint: &str, node_number: u8) {
+pub fn send_all_pcm(endpoint: &String, node_number: u8) {
     let mut files: Vec<String> = fs::read_dir("./")
         .unwrap()
         .filter(|dir_entry| {

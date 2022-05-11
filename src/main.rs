@@ -7,6 +7,7 @@ pub struct Config {
     file_transfer_port: usize,
     proc_name: String,
     server_addr: String,
+    pcm_endpoint: String,
 }
 
 impl Config {
@@ -16,6 +17,7 @@ impl Config {
         file_transfer_port: usize,
         proc_name: String,
         server_addr: String,
+        pcm_endpoint: String,
     ) -> Self {
         // TODO: Add checks
 
@@ -25,6 +27,7 @@ impl Config {
             file_transfer_port, // 49153
             proc_name,          // test_client
             server_addr,        // 127.0.0.1:8888
+            pcm_endpoint,       // 127.0.0.1:5000
         }
     }
 }
@@ -42,8 +45,16 @@ fn main() {
     let file_transfer_port = usize::from_str(args[3].as_str()).unwrap();
     let proc_name = args[4].clone();
     let server_addr = args[5].clone();
+    let pcm_endpoint = args[6].clone();
 
-    let cfg = Config::new(ip, cluster_port, file_transfer_port, proc_name, server_addr);
+    let cfg = Config::new(
+        ip,
+        cluster_port,
+        file_transfer_port,
+        proc_name,
+        server_addr,
+        pcm_endpoint,
+    );
 
     monitor::run(
         cfg.ip,
@@ -51,5 +62,6 @@ fn main() {
         cfg.file_transfer_port,
         cfg.proc_name,
         cfg.server_addr,
+        cfg.pcm_endpoint,
     );
 }

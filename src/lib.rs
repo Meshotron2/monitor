@@ -38,17 +38,20 @@ mod monitor {
 /// - `file_transfer_port`: The port to bint the file transfer server to
 /// - `proc_name`: The process name to gather usage data on
 /// - `server_addr`: The address of the room partitioner server
+/// - `server_addr`: The endpoint to send the pcm files to
 pub fn run(
     ip: String,
     cluster_port: usize,
     file_transfer_port: usize,
     proc_name: String,
     server_addr: String,
+    pcm_endpoint: String,
 ) {
     // communication::http_requests::test();
     let ip1 = ip.clone();
-    let node_server_handle =
-        thread::spawn(move || start_server(ip1, cluster_port, proc_name, server_addr));
+    let node_server_handle = thread::spawn(move || {
+        start_server(ip1, cluster_port, proc_name, server_addr, pcm_endpoint)
+    });
     let file_server_handle =
         thread::spawn(move || start_file_server(ip, file_transfer_port, "received"));
 

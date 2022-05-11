@@ -25,10 +25,17 @@ use sysinfo::{System, SystemExt};
 /// - `port`: The port to bind the server to
 /// - `proc_name`: The name of the processes to gather usage data on
 /// - `server_addr`: The address of the room partitioner server
+/// - `pcm_endpoint`: The endpoint to send the pcm files to
 ///
 /// # Acknowledgements
 /// Based on <https://riptutorial.com/rust/example/4404/a-simple-tcp-client-and-server-application--echo>
-pub fn start_server(ip: String, port: usize, proc_name: String, server_addr: String) {
+pub fn start_server(
+    ip: String,
+    port: usize,
+    proc_name: String,
+    server_addr: String,
+    pcm_endpoint: String,
+) {
     let mut sys = System::new_all();
     let node = NodeData::new();
 
@@ -54,12 +61,13 @@ pub fn start_server(ip: String, port: usize, proc_name: String, server_addr: Str
                 let sys_handle = Arc::clone(&sys);
 
                 let t = server_addr.clone();
+                let pe = pcm_endpoint.clone();
                 thread::spawn(move || {
                     let mut ph = procs_handle.lock().unwrap();
                     let mut nh = node_handle.lock().unwrap();
                     let mut sh = sys_handle.lock().unwrap();
 
-                    handle_client(stream, &mut *ph, &mut *nh, &mut *sh, t);
+                    handle_client(stream, &mut *ph, &mut *nh, &mut *sh, t, pe);
                 });
             }
             Err(e) => {
@@ -77,6 +85,7 @@ pub fn start_server(ip: String, port: usize, proc_name: String, server_addr: Str
 /// -`node`: The node's object
 /// -`sys`: [Sys] instance to fetch process data from
 /// - `server_addr`: The address of the room partitioner server
+/// - `pcm_endpoint`: The endpoint to send the pcm files
 ///
 /// # Protocol
 /// To see details on the protocol refer to [process_input]
@@ -89,6 +98,7 @@ fn handle_client(
     node: &mut NodeData,
     sys: &mut System,
     server_addr: String,
+    pcm_endpoint: String,
 ) {
     // let mut data = [0; 5 + 1 + 7 + 1]; // using 50 byte buffer
     let mut data = [0; 6 * 4]; // PID: i32, percentage: f32, send_t, recv_t, delay_t, scatter_t
@@ -116,7 +126,8 @@ fn handle_client(
                     let mut i = 1;
                     let mut name = format!("receiver_{}.pcm", i);
 
-                    send_all_pcm(&server_addr, node.get_id());
+                    println!("Would've send to {}", server_addr);
+                    send_all_pcm(&pcm_endpoint, node.get_id());
 
                     // while File::open(&name).is_ok() {
                     //     println!("Found {}", name);
