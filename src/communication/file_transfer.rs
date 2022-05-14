@@ -116,19 +116,21 @@ pub fn send_all_pcm(endpoint: &String, node_number: u8) {
     let mut files: Vec<String> = fs::read_dir("./")
         .unwrap()
         .filter(|dir_entry| {
+            let file_name = dir_entry
+                .as_ref()
+                .unwrap()
+                .file_name()
+                .into_string()
+                .unwrap();
             dir_entry.as_ref().unwrap().file_type().unwrap().is_file()
-                && dir_entry
-                    .as_ref()
-                    .unwrap()
-                    .file_name()
-                    .into_string()
-                    .unwrap()
-                    .ends_with(".pcm")
+                && file_name.ends_with(".pcm")
+                && file_name.starts_with("receiver_")
         })
         .map(|dir_entry| dir_entry.unwrap().file_name().into_string().unwrap())
         .collect();
 
-    files.sort();
+    // files.sort();
+    files.sort_by(|a, b| alphanumeric_sort::compare_str(a, b));
 
     let n_files: u32 = files.len() as u32;
 
