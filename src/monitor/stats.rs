@@ -32,7 +32,7 @@ impl NodeData {
     pub fn new() -> Self {
         let s = Sys::new_all();
 
-        let node_id = rand::thread_rng().gen();
+        let node_id = 0; // rand::thread_rng().gen();
         let used_ram = s.used_memory();
         let total_ram = s.total_memory();
         let cores = s.physical_core_count().unwrap();

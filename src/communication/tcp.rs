@@ -111,7 +111,7 @@ fn handle_client(
                     break;
                 }
                 node.update(sys);
-                send_update(node, &server_addr);
+                // send_update(node, &server_addr);
                 println!("{:?}", node);
 
                 println!("Size: {size}");
@@ -119,11 +119,12 @@ fn handle_client(
                     process_input(&data[0..size]);
                 println!("Post processing: {pid} @ {progress}% (send {send_t}, recv {recv_t}, delay {delay_t}, scatter {scatter_t})");
                 node.set_id(pid as u8);
+                send_update(node, &server_addr);
 
                 if progress == -1.0 {
                     // signals the end of the transmission
 
-                    let mut i = 1;
+                    let i = 1;
                     let mut name = format!("receiver_{}.pcm", i);
 
                     println!("Would've send to {}", server_addr);
