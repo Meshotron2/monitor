@@ -58,7 +58,8 @@ pub fn start_file_server(ip: String, port: usize, file_name: &'static str) {
 /// # Acknowledgements
 /// With the help from [Stack Overflow](HTTPS://Stackoverflow.com/questions/53826371/how-to-create-a-binary-file-with-rust)
 fn receive_file(mut stream: TcpStream, file_name: &str, counter: &mut i32) {
-    let file_name = file_name.to_owned() + &counter.to_string() + ".dwm";
+    // let file_name = file_name.to_owned() + &counter.to_string() + ".dwm";
+    let file_name = file_name.to_owned() + ".dwm";
     println!("Writing to {}", file_name);
 
     *counter += 1;
